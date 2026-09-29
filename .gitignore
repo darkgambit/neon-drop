@@ -1,0 +1,27 @@
+# ─────────────────────────────────────────────────────────────
+#  SECRETS — never commit these
+# ─────────────────────────────────────────────────────────────
+DEPLOY_SECRETS.local.md
+.env
+.env.*
+*.key
+*.pem
+
+# ─────────────────────────────────────────────────────────────
+#  Local verification harness (kept out of the shipped payload)
+# ─────────────────────────────────────────────────────────────
+.verify/
+node_modules/
+package.json
+package-lock.json
+.vscode/
+.idea/
+*.swp
+
+# ─────────────────────────────────────────────────────────────
+#  OS cruft
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
