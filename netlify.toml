@@ -1,5 +1,15 @@
+# Netlify build config — Neon Drop
+#
+# The repo root doubles as the site source, but it also holds non-public files
+# (DEPLOY_SECRETS.local.md, PROGRESS.md, the submission kit, agent prompts,
+# .verify/, dist/). `tools/build-site.mjs` copies an explicit allowlist of public
+# files into `_site/`, and `_site/` is what gets published. Nothing else can leak.
+#
+# There is no bundler and no framework — the "build" is a file copy.
+
 [build]
-  publish = "."
+  command = "node tools/build-site.mjs"
+  publish = "_site"
 
 [[headers]]
   for = "/*"
@@ -10,5 +20,10 @@
 
 [[headers]]
   for = "/game/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/blog/*"
   [headers.values]
     Cache-Control = "public, max-age=3600"
