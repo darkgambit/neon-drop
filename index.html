@@ -39,8 +39,8 @@
   a{color:var(--acc2);text-decoration:none}
   a:hover{text-decoration:underline}
 
-  header{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
-    background:rgba(5,11,20,.72);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:20;
+    background:rgba(5,11,20,.92);border-bottom:1px solid var(--line)}
   nav{display:flex;align-items:center;gap:22px;height:62px}
   .logo{font-weight:900;font-size:19px;letter-spacing:-.5px;display:flex;align-items:center;gap:9px}
   .logo i{width:26px;height:26px;border-radius:8px;display:inline-block;
@@ -54,7 +54,7 @@
   h1{font-size:clamp(38px,6.4vw,64px);font-weight:900;letter-spacing:-2px;line-height:1.02;
      background:linear-gradient(100deg,#1de9b6,#40c4ff 48%,#b388ff);
      -webkit-background-clip:text;background-clip:text;color:transparent;
-     filter:drop-shadow(0 0 26px rgba(64,196,255,.28))}
+     filter:drop-shadow(0 0 12px rgba(64,196,255,.22))}
   .lede{color:var(--dim);font-size:18px;margin:18px 0 26px;max-width:46ch}
   .cta{display:flex;gap:12px;flex-wrap:wrap}
   .btn{display:inline-block;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;
@@ -65,10 +65,24 @@
   .badges{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--dim)}
   .badges span::before{content:"✔ ";color:var(--acc)}
 
-  .frame{border-radius:22px;overflow:hidden;border:1px solid var(--line);
-    background:#050b14;box-shadow:0 34px 80px rgba(0,0,0,.6),0 0 0 6px rgba(255,255,255,.02);
+  .frame{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);
+    background:#050b14;box-shadow:0 18px 44px rgba(0,0,0,.5);
     aspect-ratio:9/16;max-height:640px}
   .frame iframe{width:100%;height:100%;border:0;display:block}
+  /* Click-to-load facade. The game is a canvas app that animates from its very
+     first frame, so loading it eagerly put three extra round-trips plus a
+     continuous render loop on this page's critical path. One click starts it. */
+  #gameLaunch{position:absolute;inset:0;width:100%;height:100%;border:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    font:inherit;color:var(--ink);
+    background:radial-gradient(360px 300px at 50% 44%,rgba(29,233,182,.16),transparent 72%)}
+  #gameLaunch .ltile{width:92px;height:92px;border-radius:22px;display:grid;place-items:center;
+    font-weight:900;font-size:42px;color:#04121a;
+    background:linear-gradient(135deg,var(--acc),var(--acc2));
+    box-shadow:0 0 44px rgba(29,233,182,.45);transition:transform .14s}
+  #gameLaunch:hover .ltile{transform:scale(1.06)}
+  #gameLaunch b{font-weight:800;font-size:17px}
+  #gameLaunch small{color:var(--dim);font-size:12.5px;letter-spacing:.02em}
 
   section{padding:46px 0}
   h2{font-size:clamp(24px,3.6vw,34px);font-weight:900;letter-spacing:-.8px;margin-bottom:8px}
@@ -138,9 +152,12 @@
         <span>Mobile &amp; desktop</span><span>Works offline</span>
       </div>
     </div>
-    <div class="frame">
-      <iframe src="game/index.html" title="Neon Drop game" loading="eager"
-              allow="autoplay; fullscreen"></iframe>
+    <div class="frame" id="frame">
+      <button id="gameLaunch" type="button" aria-label="Load and play Neon Drop right here">
+        <span class="ltile">2</span>
+        <b>▶&nbsp; Play here</b>
+        <small>Loads in a second · no download</small>
+      </button>
     </div>
   </div>
 
@@ -195,6 +212,25 @@
 
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* Start the embedded game on click, not on load.
+     The game is a canvas app that animates from its first frame. Loading it
+     eagerly put game.js (20 KB) plus a continuous render loop on this page's
+     critical path and roughly tripled first paint. One click starts it. */
+  (function () {
+    var frame = document.getElementById('frame');
+    var btn = document.getElementById('gameLaunch');
+    if (!frame || !btn) return;
+    btn.addEventListener('click', function () {
+      var f = document.createElement('iframe');
+      f.src = 'game/index.html';
+      f.title = 'Neon Drop game';
+      f.setAttribute('allow', 'autoplay; fullscreen');
+      frame.innerHTML = '';
+      frame.appendChild(f);
+      f.focus();
+    });
+  })();
 </script>
 </body>
 </html>
