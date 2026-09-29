@@ -1,0 +1,124 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Merge Scoring Works — The Maths Behind Neon Drop's Combo Multiplier</title>
+<meta name="description" content="Exactly how Neon Drop calculates score: the merge formula, the combo multiplier, and a worked example showing why one four-link chain beats four separate merges by more than five times.">
+<link rel="canonical" href="https://REPLACE-WITH-YOUR-DOMAIN/blog/how-merge-scoring-works.html">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1000px 600px at 15% -5%,rgba(29,233,182,.12),transparent 60%),#050b14;
+color:#eafcff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.75}
+.wrap{max-width:720px;margin:0 auto;padding:44px 20px 70px}
+a{color:#40c4ff;text-decoration:none}a:hover{text-decoration:underline}
+h1{font-size:clamp(28px,6vw,38px);font-weight:900;letter-spacing:-1px;margin-bottom:6px;line-height:1.15;
+background:linear-gradient(100deg,#1de9b6,#40c4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:20px;margin:34px 0 10px;font-weight:800}
+p,li{color:#b9d7e6;margin-bottom:12px}ul,ol{padding-left:22px}
+.date{color:#7d9cae;font-size:13px;margin-bottom:26px}
+.back{display:inline-block;margin-bottom:26px;font-size:14px;color:#9fc4d8}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid rgba(160,220,255,.15)}
+th{color:#8fb3c7;font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+td{color:#b9d7e6}
+td.num{text-align:right;font-variant-numeric:tabular-nums;color:#eafcff;font-weight:700}
+tfoot td{color:#1de9b6;font-weight:800;border-bottom:0}
+.note{background:rgba(255,255,255,.045);border:1px solid rgba(160,220,255,.15);
+border-radius:14px;padding:16px 18px;margin:18px 0}
+.note b{color:#1de9b6}
+.cta{display:inline-block;margin:10px 0 0;font-weight:800;padding:13px 26px;border-radius:999px;
+color:#04121a;background:linear-gradient(100deg,#1de9b6,#40c4ff)}
+.cta:hover{text-decoration:none}
+code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;font-size:.92em}
+</style></head><body><div class="wrap">
+<a class="back" href="/">← Play Neon Drop</a>
+
+<h1>How the scoring works</h1>
+<div class="date">Mechanics</div>
+
+<p>Neon Drop does not score by counting tiles or by how long you survive. Every point comes
+from merges, and the size of the payout depends on two things: how big the tile you just
+created is, and how many merges you have already chained together in this drop. Understanding
+those two numbers is the difference between a score in the hundreds and a score in the tens
+of thousands.</p>
+
+<h2>The formula</h2>
+<div class="note"><b>points = new tile value × (1 + combo × 0.25)</b><br>
+<code>combo</code> is the number of merges that have happened since your last drop, and it
+starts at 1 for the first merge of a drop.</div>
+<p>Two things matter here. First, the payout scales with the <em>resulting</em> tile — merging
+two 256s into a 512 pays far more than merging two 4s into an 8. Second, the multiplier grows
+with every link in the chain. The two effects multiply each other, which is why late-chain
+merges are worth an order of magnitude more than early ones.</p>
+
+<h2>Multi-merge groups</h2>
+<p>You are not limited to merging two tiles. Any orthogonally touching group of equal tiles
+collapses at once, and each extra tile in the group doubles the result again:</p>
+<table>
+<thead><tr><th>Group</th><th>Result</th><th class="num">Value created</th></tr></thead>
+<tbody>
+<tr><td>2 tiles</td><td>doubles</td><td class="num">×2</td></tr>
+<tr><td>3 tiles</td><td>doubles, then doubles again</td><td class="num">×4</td></tr>
+<tr><td>4 tiles</td><td>three doublings</td><td class="num">×8</td></tr>
+</tbody>
+</table>
+<p>So four 2s merged in one go produce a 16, not an 8 — and a 16 scores eight times what a 4
+does. Building a compact block of identical tiles and collapsing it in a single move is often
+better than letting them merge two at a time.</p>
+
+<h2>A worked example</h2>
+<p>Here is the comparison that changes how most people play. Take four merges that each
+produce the next power of two — a 4, an 8, a 16 and a 32.</p>
+
+<p><b>As four separate drops</b>, each merge is the first of its own drop, so the multiplier
+is 1.25× every time:</p>
+<table>
+<thead><tr><th>Merge</th><th>Multiplier</th><th class="num">Points</th></tr></thead>
+<tbody>
+<tr><td>→ 4</td><td>1.25×</td><td class="num">5</td></tr>
+<tr><td>→ 8</td><td>1.25×</td><td class="num">10</td></tr>
+<tr><td>→ 16</td><td>1.25×</td><td class="num">20</td></tr>
+<tr><td>→ 32</td><td>1.25×</td><td class="num">40</td></tr>
+</tbody>
+<tfoot><tr><td colspan="2">Total</td><td class="num">75</td></tr></tfoot>
+</table>
+
+<p><b>As one four-link cascade</b>, the combo counter never resets, so the multiplier climbs
+with every link:</p>
+<table>
+<thead><tr><th>Merge</th><th>Multiplier</th><th class="num">Points</th></tr></thead>
+<tbody>
+<tr><td>→ 4 <span style="color:#8fb3c7">(combo 1)</span></td><td>1.25×</td><td class="num">5</td></tr>
+<tr><td>→ 8 <span style="color:#8fb3c7">(combo 2)</span></td><td>1.50×</td><td class="num">12</td></tr>
+<tr><td>→ 16 <span style="color:#8fb3c7">(combo 3)</span></td><td>1.75×</td><td class="num">28</td></tr>
+<tr><td>→ 32 <span style="color:#8fb3c7">(combo 4)</span></td><td>2.00×</td><td class="num">64</td></tr>
+</tbody>
+<tfoot><tr><td colspan="2">Total</td><td class="num">109</td></tr></tfoot>
+</table>
+
+<p>Same four merges, same four tiles created — <b>109 points instead of 75</b>, a 45% uplift
+from sequencing alone. And the gap widens with every extra link: extend that chain to a 64
+and the fifth merge alone pays 64 × 2.25 = 144.</p>
+
+<p>This is exactly why the game rewards patience over activity. A drop that triggers nothing
+scores zero but costs you nothing either. A drop that triggers a long chain can be worth more
+than the previous twenty drops combined.</p>
+
+<h2>Where coins come from</h2>
+<p>Coins are earned alongside score and are far less dramatic: each merge awards roughly
+one coin per 16 points of tile value created, with a minimum of one. They accumulate quietly
+in the background and are stored locally alongside your best score. The game-over screen also
+offers to double them in exchange for watching a short ad, which is the fastest way to build
+the number up.</p>
+
+<h2>What is actually saved</h2>
+<p>Your best score and your coin balance are written to your browser's local storage on your
+own device. Nothing is uploaded and there is no account. Clearing your browser's site data
+resets both — which is worth knowing before you clear cookies.</p>
+
+<a class="cta" href="/game/index.html">▶ Play Neon Drop</a>
+
+<h2>Keep reading</h2>
+<ul>
+<li><a href="/blog/cascade-strategy.html">Cascade strategy — how to build merge chains on purpose</a></li>
+<li><a href="/blog/best-free-browser-puzzle-games.html">The best free browser puzzle games you can play without downloading anything</a></li>
+</ul>
+</div></body></html>

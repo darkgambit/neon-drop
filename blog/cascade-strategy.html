@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cascade Strategy — How to Build Merge Chains in Neon Drop</title>
+<meta name="description" content="A practical guide to setting up cascade chains in Neon Drop: how gravity re-checks the board, how the combo multiplier compounds, and the staircase pattern that triggers four-link merges.">
+<link rel="canonical" href="https://REPLACE-WITH-YOUR-DOMAIN/blog/cascade-strategy.html">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1000px 600px at 15% -5%,rgba(29,233,182,.12),transparent 60%),#050b14;
+color:#eafcff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.75}
+.wrap{max-width:720px;margin:0 auto;padding:44px 20px 70px}
+a{color:#40c4ff;text-decoration:none}a:hover{text-decoration:underline}
+h1{font-size:clamp(28px,6vw,38px);font-weight:900;letter-spacing:-1px;margin-bottom:6px;line-height:1.15;
+background:linear-gradient(100deg,#1de9b6,#40c4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:20px;margin:34px 0 10px;font-weight:800}
+h3{font-size:16px;margin:22px 0 6px;font-weight:800;color:#cfeaf7}
+p,li{color:#b9d7e6;margin-bottom:12px}ul,ol{padding-left:22px}
+.date{color:#7d9cae;font-size:13px;margin-bottom:26px}
+.back{display:inline-block;margin-bottom:26px;font-size:14px;color:#9fc4d8}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:18px 0;max-width:280px}
+.cell{aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-weight:900;font-size:15px;color:#04121a}
+.v2{background:linear-gradient(135deg,#1de9b6,#00bfa5)}
+.v4{background:linear-gradient(135deg,#40c4ff,#0091ea)}
+.v8{background:linear-gradient(135deg,#7c4dff,#4527a0);color:#fff}
+.v16{background:linear-gradient(135deg,#ff4081,#c51162);color:#fff}
+.empty{background:rgba(255,255,255,.05);border:1px dashed rgba(160,220,255,.2)}
+.note{background:rgba(255,255,255,.045);border:1px solid rgba(160,220,255,.15);
+border-radius:14px;padding:16px 18px;margin:18px 0}
+.note b{color:#1de9b6}
+.cta{display:inline-block;margin:10px 0 0;font-weight:800;padding:13px 26px;border-radius:999px;
+color:#04121a;background:linear-gradient(100deg,#1de9b6,#40c4ff)}
+.cta:hover{text-decoration:none}
+code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;font-size:.92em}
+</style></head><body><div class="wrap">
+<a class="back" href="/">← Play Neon Drop</a>
+
+<h1>Cascade strategy: how to build merge chains</h1>
+<div class="date">Strategy guide</div>
+
+<p>Most players lose at Neon Drop for the same reason: they merge the moment they can.
+Merging early feels productive, but it throws away the single biggest source of score in
+the game — the cascade. This guide explains exactly how cascades happen and how to set
+them up on purpose.</p>
+
+<h2>What a cascade actually is</h2>
+<p>When tiles merge, the board does not just settle once. The engine runs a loop:</p>
+<ol>
+<li>Apply gravity — every tile falls as far as it can.</li>
+<li>Look for touching groups of equal tiles and merge them.</li>
+<li>If anything merged, go back to step 1.</li>
+</ol>
+<p>That loop is why one drop can produce a five-link chain. A merge creates a bigger tile
+where two smaller ones used to be, gravity shifts everything down, and the new arrangement
+may put that bigger tile next to an equal one — which merges again, and again, until the
+board is stable. Every extra link in the chain is worth dramatically more than the last.</p>
+
+<h2>Why chaining pays so much</h2>
+<p>The combo counter only resets when a drop finishes. Within a single settle loop it keeps
+climbing, and the multiplier is applied to every merge:</p>
+<div class="note"><b>points = new tile value × (1 + combo × 0.25)</b><br>
+The first merge of a chain pays 1.25×, the second 1.5×, the third 1.75×, the fourth 2× and
+so on — and the tile values are doubling at the same time.</div>
+<p>That compounding is the whole game. A single 2+2 merge into a 4 is worth 5 points. Chain
+three merges together in one drop — 2+2 into a 4, that 4 into an 8, that 8 into a 16 — and
+you collect 5 + 12 + 28 = <b>45 points</b>, nine times as much, from the same three merges.
+Keep the chain alive one link longer and the numbers run away quickly.</p>
+
+<h2>The staircase: how to set a chain up deliberately</h2>
+<p>A chain happens when a merge produces a value that already touches an equal tile. So the
+shape you want in a column is a descending run — each tile double the one above it. Reading
+from the bottom of a column upward, that looks like this:</p>
+
+<div class="grid">
+  <div class="cell v16">16</div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div>
+  <div class="cell v8">8</div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div>
+  <div class="cell v4">4</div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div>
+  <div class="cell v2">2</div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div>
+</div>
+
+<p>Now drop a 2 onto the top of that column. The two 2s fuse into a 4. That 4 is touching the
+4 beneath it, so it fuses into an 8. That 8 is touching the 8 beneath it, so it fuses into a
+16 — and if you have a 16 under that, the chain continues. One tile, four merges, and the
+combo multiplier climbing the whole way.</p>
+
+<p>The same logic works sideways. Two 4s sitting side by side will merge the moment gravity
+drops something that lets them touch, so leaving deliberate pairs next to each other across
+neighbouring columns is a valid setup too.</p>
+
+<h2>Practical habits</h2>
+<ul>
+<li><b>Keep one column as your seed column.</b> Build the descending run there and feed it.
+Leave at least one column empty for as long as you can — it is your escape hatch when the
+board gets tight.</li>
+<li><b>Do not merge just because you can.</b> Ask whether the merge sets up the next link or
+destroys a staircase you were building.</li>
+<li><b>Watch the NEXT preview.</b> It tells you what is coming, which is the difference
+between a plan and a reaction.</li>
+<li><b>Big tiles change what you are dealt.</b> The spawn pool is not fixed. Once you have a
+32 on the board, 8s start appearing; past 128 you start seeing 8s and 16s; past 512, 16s and
+32s. Building one tall tile therefore makes the rest of the game faster — and makes
+accidental chains more likely.</li>
+<li><b>Respect the ceiling.</b> A staircase needs vertical room. If a column is nearly full,
+you have no space left to feed it.</li>
+</ul>
+
+<h2>The failure mode to avoid</h2>
+<p>The board ends when all five columns are full and no two touching tiles are equal. That
+almost never happens suddenly. It happens because you spent twenty drops flattening the
+board with single merges and left yourself no structure. A staircase is not just a scoring
+trick — it is the thing that keeps your board from filling up.</p>
+
+<div class="note"><b>Try it now:</b> start a run and spend the first ten drops building one
+clean descending column instead of merging on sight. The difference in score is obvious
+almost immediately.</div>
+
+<a class="cta" href="/game/index.html">▶ Play Neon Drop</a>
+
+<h2>Keep reading</h2>
+<ul>
+<li><a href="/blog/how-merge-scoring-works.html">How Neon Drop scores — the maths behind the combo multiplier</a></li>
+<li><a href="/blog/best-free-browser-puzzle-games.html">The best free browser puzzle games you can play without downloading anything</a></li>
+</ul>
+</div></body></html>
