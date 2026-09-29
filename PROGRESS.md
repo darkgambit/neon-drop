@@ -32,6 +32,9 @@ repo:    https://github.com/darkgambit/neon-drop   (PUBLIC)
 branch:  main
 author:  darkgambit <kingripper9@gmail.com>
 
+a8bf9f6  PROGRESS: make the acceptance-gate record self-clean
+dc1ca73  Phase 4/5: marketing clips, launch post drafts, handover docs
+a173b69  Phase 2: record the live deployment, the badge defect and the placeholder gate
 adefec4  Phase 2: replace every placeholder with its live value
 046575a  Phase 2: stage the deploy from an explicit allowlist, not the repo root
 af0b222  Phase 4 (part): three original guides, wired into the site and the sitemap
@@ -39,6 +42,9 @@ d94bf7d  PROGRESS.md: record Phase 1 results, harness gotchas and current blocke
 a1b2ad6  Phase 1: verify the game end-to-end, then fix what Lighthouse found
 fd2a5a4  Neon Drop: baseline — finished game, landing page, legal pages, ad adapter   <-- tag: baseline
 ```
+
+**Acceptance gate: PASS** — the placeholder grep returns no lines (exit 1). Re-verified against
+both the working tree and the built `_site/`. See "Acceptance gate" under Phase 2.
 
 `git diff baseline` = the complete, reviewable set of launch-engineering changes.
 
