@@ -8,9 +8,13 @@ DEPLOY_SECRETS.local.md
 *.pem
 
 # ─────────────────────────────────────────────────────────────
-#  Local verification harness (kept out of the shipped payload)
+#  Verification harness — the harness itself IS committed, because the deploy
+#  payload is allowlisted through tools/build-site.mjs, so there is no longer
+#  any reason to keep it out of git. Only its bulky output is ignored.
 # ─────────────────────────────────────────────────────────────
-.verify/
+.verify/out*/
+.verify/shots*/
+.verify/tmp/
 node_modules/
 package.json
 package-lock.json
