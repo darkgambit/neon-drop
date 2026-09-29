@@ -24,7 +24,7 @@
     gdGameId: '',          // e.g. '1a2b3c4d5e6f7g8h9i0j'  <-- paste yours
 
     // --- Google AdSense (self-hosted page ads) -----------------------
-    adsenseClient: '',     // e.g. 'ca-pub-0000000000000000'
+    adsenseClient: '',     // e.g. 'ca-pub-XXXXXXXXXXXXXXXX' (16 digits, from AdSense)
 
     // Minimum seconds between interstitials (portal policy friendly)
     interstitialCooldown: 90,

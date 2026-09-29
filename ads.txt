@@ -1,3 +1,21 @@
-# Google AdSense — replace pub-0000000000000000 with YOUR publisher ID after approval.
-# This file must be reachable at https://yourdomain.com/ads.txt
-google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# ads.txt — Neon Drop
+# Live at https://neon-drop.netlify.app/ads.txt
+#
+# THERE IS DELIBERATELY NO ACTIVE RECORD IN THIS FILE YET.
+#
+# Publishing a placeholder publisher ID is worse than publishing nothing: an
+# ads.txt line names a seller that is authorised to sell this site's inventory,
+# so a fake ID actively misdeclares who may sell it. Google's own guidance is to
+# add the record only once the account is approved and serving.
+#
+# WHEN ADSENSE APPROVES THE ACCOUNT:
+#   1. Copy the publisher ID from AdSense > Account > Account information.
+#      It looks like: ca-pub- followed by 16 digits.
+#   2. Uncomment the line below and replace the placeholder with that ID.
+#   3. Set adsenseClient in game/monetize.js to the same value (ca-pub-...).
+#   4. Rebuild and redeploy. Nothing else needs to change.
+#
+# The trailing value f08c47fec0942fa0 is Google's certification authority ID and
+# is a constant — it is the same for every AdSense publisher.
+#
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

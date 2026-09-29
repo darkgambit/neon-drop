@@ -73,9 +73,9 @@ PHASE 2 — SHIP IT LIVE (free hosting, free SSL, free domain)
    - Fallback if Netlify is unavailable: Cloudflare Pages, then GitHub Pages.
 4. Enable HTTPS, confirm the live URL loads, and confirm the game is playable
    ON THE LIVE URL from a fresh browser profile.
-5. Find-and-replace EVERY occurrence of `REPLACE-WITH-YOUR-DOMAIN` across
+5. Find-and-replace EVERY occurrence of the domain placeholder across
    index.html, robots.txt and sitemap.xml with the real live domain. Redeploy.
-6. Update `contact.html` with my real contact email (replace `__EMAIL__`).
+6. Update `contact.html` with my real contact email (replacing the email placeholder).
 7. Submit the site + sitemap to Google Search Console and Bing Webmaster Tools.
    Verify ownership using the HTML-file or DNS method and confirm verification
    actually succeeded.
@@ -93,7 +93,7 @@ A) GOOGLE ADSENSE  (self-hosted landing page — highest long-term RPM)
    - Apply at adsense.google.com with the live domain.
    - Paste the AdSense script into `index.html` (the commented block is already
      there) and set `adsenseClient` in `game/monetize.js`.
-   - Put my real publisher ID into `/ads.txt` (replace pub-0000000000000000)
+   - Put my real publisher ID into `/ads.txt` (replacing the publisher-ID placeholder)
      and verify `https://mydomain/ads.txt` returns it.
    - Create responsive display units for slots `ad-1` and `ad-2` and wire the
      data-ad-slot attributes.
@@ -196,9 +196,8 @@ FINAL ACCEPTANCE CRITERIA — do not tell me you are finished until ALL are true
      desktop with zero console errors.
   ✅ The game is LIVE and publicly playable on at least one portal.
   ✅ At least one ad network is integrated and verifiably making ad requests.
-  ✅ Every `REPLACE-WITH-YOUR-DOMAIN`, `__EMAIL__`, `pub-0000000000000000` and
-     empty ID placeholder in the repo has been replaced with a real value.
-     Grep the repo to prove it.
+  ✅ Every domain, email and publisher-ID placeholder in the repo has been
+     replaced with a real value. Grep the repo to prove it.
   ✅ Payout details are attached to accounts in MY name.
   ✅ Search Console verified and sitemap submitted.
   ✅ All five handover documents exist and are accurate.

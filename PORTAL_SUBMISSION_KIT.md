@@ -194,7 +194,7 @@ for name, tw, th, fy in [('512x512-square.png',512,512,.42),
 | Enable | uncomment the AdSense `<script>` in `index.html` |
 | `adsenseClient` | `ca-pub-…` → `game/monetize.js` |
 | Ad slots | create 2 responsive units → wire `data-ad-slot` on `#ad-1` and `#ad-2` |
-| `ads.txt` | replace `pub-0000000000000000` with the real publisher ID |
+| `ads.txt` | uncomment the record and paste the real publisher ID — see the notes inside the file itself |
 | CMP | Google Funding Choices (free) — must block personalised cookies before consent |
 
 ### G) Ko-fi / Buy Me a Coffee

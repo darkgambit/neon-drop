@@ -61,7 +61,7 @@ python3 -m http.server 8080
 
 1. Push this folder to a public GitHub repo.
 2. Connect the repo to **Netlify** or **Cloudflare Pages** → free hosting, free HTTPS, free subdomain, auto-deploy on push.
-3. Replace every `REPLACE-WITH-YOUR-DOMAIN` (index.html, robots.txt, sitemap.xml) and `__EMAIL__` (contact.html) with real values.
+3. Replace the domain and email placeholders with real values — already done in this repo (canonical URL, og:image, robots.txt, sitemap.xml and contact.html all carry live values).
 
 ---
 

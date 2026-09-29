@@ -120,8 +120,8 @@ PHASE 2 — GO LIVE  (expect ~2 checkpoints)
 4. Confirm the LIVE https URL loads and the game is fully playable on it — re-run your
    Playwright checks against the production URL, not localhost.
 5. Global find-and-replace, then redeploy and verify:
-     REPLACE-WITH-YOUR-DOMAIN  → the real domain (index.html, robots.txt, sitemap.xml)
-     __EMAIL__                 → my contact email (contact.html)
+     the domain placeholder     → the real domain (index.html, robots.txt, sitemap.xml)
+     the email placeholder      → my contact email (contact.html)
 6. Google Search Console + Bing Webmaster Tools: verify ownership (HTML-file method is
    easiest since you control the repo), submit sitemap.xml, confirm verification actually
    succeeded. → handshake block for the sign-in.
@@ -203,8 +203,8 @@ DO NOT TELL ME YOU ARE FINISHED until every one of these is true:
   ✅ Live URL loads over HTTPS; game fully playable on mobile + desktop; zero console errors
   ✅ Game is LIVE and publicly playable on at least one portal
   ✅ At least one ad network integrated and verifiably making ad requests
-  ✅ `grep -rn "REPLACE-WITH-YOUR-DOMAIN\|__EMAIL__\|pub-0000000000000000" .` returns
-     nothing — run it and show me the empty output
+  ✅ `grep -rn` for the three retired placeholders (domain, email, publisher ID)
+     returns nothing — run it and show me the empty output
   ✅ Payout details attached to accounts in MY name
   ✅ Search Console verified, sitemap submitted
   ✅ All handover docs committed and accurate
