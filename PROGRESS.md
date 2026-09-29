@@ -88,7 +88,7 @@ reasons unrelated to the game. It now counts only frames whose URL contains `/ga
 | `robots.txt` | placeholder domain | live sitemap URL |
 | `sitemap.xml` | 8 placeholder URLs | 8 live URLs |
 | 3 × `blog/*.html` canonical | placeholder domain | live domain |
-| `contact.html` | `__EMAIL__` | real `mailto:` address |
+| `contact.html` | the email placeholder | real `mailto:` address |
 | `ads.txt` | fake publisher ID | **no active record** (see below) |
 | `game/monetize.js` | comment with fake ID | reworded |
 
@@ -98,8 +98,19 @@ it — worse than an empty file. The record is commented out with instructions f
 approval. When the real ID lands: uncomment it, set `adsenseClient` in `game/monetize.js`, redeploy.
 
 ### Acceptance gate — PASS
+The gate is: grep the whole repo for the three retired placeholders — the domain placeholder, the
+email placeholder, and the all-zero AdSense publisher ID. Expect **no lines selected**.
+
+The three strings are assembled below by concatenation rather than typed out, so that this file does
+not itself contain the tokens it forbids. A document that quotes the pattern it is checking defeats
+its own check — which is exactly what happened here on the first attempt, and is why the command
+looks like this.
+
 ```
-$ grep -rn "REPLACE-WITH-YOUR-DOMAIN\|__EMAIL__\|pub-0000000000000000" .
+$ D="REPLACE-WITH-YOUR""-DOMAIN"
+$ E="__EMAI""L__"
+$ P="pub-00000000""00000000"
+$ grep -rn "$D\|$E\|$P" .
 grep exit code : 1        (1 = no lines selected)
 match count    : 0
 raw output     : []
