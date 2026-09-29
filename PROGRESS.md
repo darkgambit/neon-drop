@@ -18,10 +18,10 @@
 |---|---|---|---|
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
 | 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 42/42 functional. All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed. Commit `a1b2ad6`. |
-| 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **90% — only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. **Needs: GSC + Bing handshake.** |
-| 3 | **Connect the money** — portals + ad networks | ⬜ not started | One checkpoint per platform. itch.io assets already built. |
-| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 40% | 3 guides written & live. Still need analytics + 10 clips + launch posts. |
-| 5 | **Handover** — docs + evidence | ⬜ not started | |
+| 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
+| 3 | **Connect the money** — portals + ad networks | ⬜ not started | One checkpoint per platform. All assets ready. See `MONETIZATION_STATUS.md`. |
+| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ⬜ analytics (needs an account) |
+| 5 | **Handover** — docs + evidence | 🟡 75% | ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `/evidence` screenshots · ⬜ `LAUNCH_REPORT.md` (write last) |
 
 ---
 
@@ -155,6 +155,72 @@ measured characteristic rather than "fixed" by risking a working product.
 
 ---
 
+## Phase 4 — traffic
+
+### ✅ Three original articles, live and internally linked
+`blog/cascade-strategy.html` (787 words), `blog/how-merge-scoring-works.html` (640),
+`blog/best-free-browser-puzzle-games.html` (749). All three are in `sitemap.xml`,
+linked from a `#guides` section on the landing page and from the footer, and
+cross-linked to each other. They also serve AdSense's content requirement.
+
+### ✅ Ten vertical marketing clips — `marketing/clips/`
+**Real captured gameplay of the shipped game.** No generated footage, no mock-ups.
+Recorded with Playwright at 1080×1920, H.264 MP4, silent, each with a burnt-in hook
+line and a footer. Captions + hashtags + alt text per clip in
+`marketing/clips/captions.md`.
+
+| Clip | Length | Hook |
+|---|---|---|
+| 01-how-it-works | 19.8s | Drop. Merge. Double. |
+| 02-first-merge | 18.0s | Two 2s make a 4 |
+| 03-cascade-chain | 15.8s | One drop, chain reaction |
+| 04-combo-multiplier | 20.6s | COMBO x4 |
+| 05-staircase | 21.2s | The staircase |
+| 06-score-climbs | 20.4s | The score runs away |
+| 07-game-over-revive | 10.8s | Game over? Keep going. |
+| 08-mobile-one-thumb | 17.5s | One thumb. No download. |
+| 09-keyboard-play | 18.4s | Arrow keys + Space |
+| 10-plays-instantly | 9.2s | Plays instantly |
+
+**Four real bugs were found and fixed while building these** — recorded because they
+are all the same class of mistake:
+
+1. **The render blacked the whole video.** `fade=t=out:st=0:d=0.35` fades out at
+   t=0, so every frame after 0.35 s was black. Fade-out must start at
+   `duration − 0.35`.
+2. **The engine was laid out for the wrong height.** The bottom caption band is
+   created by injecting CSS that shrinks `#wrap`, but the engine only recomputes
+   `CELL/OX/OY` inside `resize()`, which fires on a window resize event — not on a
+   style change. So the game kept its old geometry while my column maths used the
+   new one and **every click landed in the wrong column**. Fix: dispatch a `resize`
+   event after injecting the CSS.
+3. **Drops were timer-paced instead of landing-paced.** The engine's value picker
+   advances per *landing*, so a fixed `sleep()` desynchronises any scripted
+   sequence — the Game Over fill produced merges instead and never filled the
+   board. Fix: wait for each tile to land (`waitLanded`).
+4. **A clip claimed something untrue.** Clip 06 was captioned "Reaching 256", which
+   is unreachable in a short clip (256 needs a 128+128 merge chain), and clip 01's
+   subtitle said "10 seconds" on a 20-second clip. Both rewritten. *Marketing that
+   overstates the footage is a liability, not a shortcut.*
+
+### ✅ Launch posts — `marketing/launch-posts.md`
+Drafts for r/WebGames, r/playmygame, Show HN, Product Hunt, IndieDB, and
+r/incremental_games — plus a posting order, and community rules worth following.
+**Nothing has been posted.** Drafts only, as instructed.
+
+> ⚠️ **Flagged:** r/incremental_games is probably the wrong room — Neon Drop has no
+> idle mechanic, no prestige and no offline progress, and that sub is strict about
+> scope. `r/puzzlegames` is a better fit. A draft is included either way, but this
+> needs a decision before posting.
+
+### ⬜ Analytics — needs an account, so it needs a handshake
+Cloudflare Web Analytics and Umami Cloud both require an account, so this could not
+be done autonomously. It is queued. Deliberately **not** hand-rolled as a
+first-party Netlify Function: it would add a serverless dependency and a datastore
+to a site whose entire selling point is that it has no dependencies.
+
+---
+
 ## Phase 1 — results (evidence in `.verify/out/`, re-confirmed on production in `.verify/out-prod/`)
 
 **Functional: 42/42 passing, on localhost AND on the live production URL.**
@@ -205,11 +271,20 @@ tile values deterministic. **No game code was modified to make it testable.**
 
 1. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
    verification token. Netlify gives us no DNS control (the site is on a `netlify.app` subdomain),
-   so DNS verification is not available; the **HTML-file or HTML-tag method** is the path.
-2. **Every Phase 3 platform** needs its own sign-in handshake.
-3. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
+   so DNS verification is not available; the **HTML-tag method** is the path. Handshake #2 was
+   issued and **deferred, not skipped**.
+2. **Every Phase 3 platform** needs its own sign-in handshake. Nothing can be submitted without an
+   account, so this is the single biggest remaining dependency. See `MONETIZATION_STATUS.md`.
+3. **Analytics** needs a Cloudflare Web Analytics or Umami account.
+4. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
    public contact `kingripper9@gmail.com`, Philippines, crypto-preferred payout.
    ⚠️ The contact address is now **published** on `contact.html` — say the word and I will swap it.
+5. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
+   default. That is *consistent* with `terms.html` (personal licence to play only; embedding needs a
+   licence) — but it is a business decision, so I have not touched it. Decide whether the source
+   stays all-rights-reserved or is open-sourced; portals sometimes ask.
+6. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
+   for a dedicated address if it becomes noisy.
 
 ---
 
@@ -228,6 +303,7 @@ tile values deterministic. **No game code was modified to make it testable.**
 | `tools/build-site.mjs` | stages the public allowlist into `_site/`, asserts nothing private leaked |
 | `tools/make-og-cover.py` | crops `cover.png` → 1200×630 `og-cover.jpg` |
 | `tools/make-itch-zip.py` | builds `dist/neon-drop-itch.zip`, `index.html` flat at root |
+| `tools/record-clips.mjs` | records the 10 vertical marketing clips; `--only <id>` for one, `--captions-only` to rebuild the sheet |
 | `tools/shot.mjs` | evidence screenshots of a running site (desktop + mobile) |
 | `.verify/verify.mjs` | 42-check functional suite — `node .verify/verify.mjs <baseUrl>` |
 | `.verify/lighthouse.mjs` | Lighthouse gate — `node .verify/lighthouse.mjs <baseUrl>` |
@@ -255,6 +331,16 @@ Local server: `python -m http.server 8080` from the project root → `http://127
   desktop and 100/100 mobile; production mobile passes, desktop perf is network-bound (documented
   above, with evidence).
 - Two background tasks from earlier were stale (a `netlify-cli` install notification) — no action.
+- **Phase 4 — ten vertical marketing clips** recorded as real gameplay (`tools/record-clips.mjs`).
+  Four bugs found and fixed along the way: a `fade=out:st=0` that blacked the whole render, a
+  stale engine layout because injected CSS does not fire `resize()`, timer-paced instead of
+  landing-paced drops, and two clips whose on-screen text overstated the footage. Committed with
+  `marketing/launch-posts.md` (drafts only — nothing posted) and `MAINTENANCE.md`.
+- **Phase 5 docs** — `MAINTENANCE.md`, `MONETIZATION_STATUS.md` and `/evidence` screenshots written.
+  `LAUNCH_REPORT.md` is deliberately left for last.
+- **GSC handshake deferred by Angelo** ("continue") — recorded as deferred, not skipped.
+- ⚠️ Bulk `rm` of the raw clip captures was blocked by a sandbox safe-delete guard (59 files in one
+  glob). Harmless — the raw captures are gitignored. Delete them in batches of ≤10 if tidying.
 
 ---
 
