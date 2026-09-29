@@ -70,36 +70,58 @@ match, single player, arcade
 
 | File | Size | Use |
 |---|---|---|
-| `dist/neon-drop-itch.zip` | 11 KB | Upload build — `index.html` at zip root |
+| `dist/neon-drop-itch.zip` | 10.4 KB | Upload build — `index.html` at zip root |
 | `dist/art/512x512-square.png` | 292 KB | Poki icon, Playgama, GameDistribution thumbnail |
 | `dist/art/800x450-crazygames.png` | 392 KB | CrazyGames thumbnail (16:9) |
 | `dist/art/1280x720-16x9.png` | 956 KB | itch.io, general 16:9 |
 | `dist/art/1920x1080-16x9.png` | 1.7 MB | Large 16:9 where requested |
 | `dist/art/630x500-itch-cover.png` | 363 KB | itch.io cover |
+| `dist/screenshots/01-combo-cascade.png` | 433 KB | **Screenshot** — live `COMBO x2` + floating `+24` |
+| `dist/screenshots/02-building-64.png` | 514 KB | **Screenshot** — gold 64 mid-board, score 421 |
+| `dist/screenshots/03-high-scores.png` | 568 KB | **Screenshot** — two 64s, score 699 |
 | `cover.png` (1376×768) | 1.7 MB | Source art / social OG image |
 | `cover.jpg` (1280×714) | 96 KB | Lighter source art |
+
+**Screenshots are 1040×2060** (portrait 1:1.98), captured from the **live production build** by
+`tools/shot-portal.mjs`. Portrait, not letterboxed 16:9, because Neon Drop is a portrait game —
+a landscape shot would show a small board floating in empty space. See "Why these numbers" below.
 
 **Note:** `cover.jpg` is 1280×714 rather than a true 16:9 1280×720 — a 6-pixel difference,
 harmless for every portal reviewed here, but `dist/art/1280x720-16x9.png` is exact if a
 strict validator complains.
 
+### Why these numbers (don't re-derive them)
+
+`#wrap` in `game/index.html` is capped at `max-width:520px`. At any tall viewport the board is
+therefore **width**-constrained, and the lower part of the canvas is empty background. 520×1030 is
+the tallest viewport at which the board still fills the frame:
+
+```
+CELL     = (520 - 24) / 5          = 99.2
+needed h = TOPBAR + CELL*1.25 + 8*CELL + 16
+         = 96 + 124 + 793.6 + 16   = 1030
+```
+
+`deviceScaleFactor: 2` then yields 1040×2060. RNG is seeded (`SEED`, default 777) so the same
+boards come back every run — a listing screenshot you cannot reproduce cannot be updated later
+without guessing. Drops are **idle-paced**: the engine ignores a drop while a tile is still
+falling, so clicking on a timer silently loses most of them and leaves the board nearly empty.
+
 ---
 
 ## Build command
 
-Regenerate the upload zip from the `game/` folder at any time:
+Regenerate the upload zip (canonical builder — it also asserts the zip contents and integrity):
 
 ```bash
-python -c "
-import zipfile, os
-with zipfile.ZipFile('dist/neon-drop-itch.zip','w',zipfile.ZIP_DEFLATED) as z:
-    for f in ['index.html','game.js','monetize.js']:
-        z.write(os.path.join('game', f), f)
-"
+node tools/build-site.mjs            # refresh _site/ (not needed for the zip)
+python tools/make-itch-zip.py        # -> dist/neon-drop-itch.zip
+node tools/shot-portal.mjs           # -> dist/screenshots/*.png
 ```
 
 `index.html` **must** sit at the zip root — not inside a folder. All three files must be
 flat and side by side, because `index.html` loads `monetize.js` and `game.js` by relative path.
+`tools/make-itch-zip.py` asserts exactly this and exits non-zero if it is wrong.
 
 Regenerate the cover-art set (needs Pillow; `dist/` is gitignored, so these are build
 artifacts, not source):
@@ -142,7 +164,7 @@ for name, tw, th, fy in [('512x512-square.png',512,512,.42),
 | Tags | `merge, puzzle, casual, browser, html5, singleplayer, free, arcade` |
 | Pricing | No payments / free |
 | Cover image | `dist/art/630x500-itch-cover.png` |
-| Screenshots | `evidence/` gameplay shots |
+| Screenshots | `dist/screenshots/` — all 3 (`01-combo-cascade.png`, `02-building-64.png`, `03-high-scores.png`) |
 | Visibility | Public |
 
 ### B) GameDistribution — 33% of net revenue, €100 threshold
