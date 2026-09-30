@@ -25,7 +25,6 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DIST = path.join(ROOT, 'dist');
 const PY = 'C:/Users/ADMIN/.workbuddy-ai/binaries/python/versions/3.13.12/python.exe';
 const GD_SDK = 'html5.api.gamedistribution.com';
 
@@ -36,13 +35,22 @@ const record = (name, pass, detail = '') => {
 };
 
 /* ---- 1. rebuild both bundles, so we test what the tool actually emits ---- */
-const TEST_ID = process.argv[2] || '49258a0e497c42b5b5d87887f24d27a6';
+//
+// The throwaway id below is NOT a real GameDistribution id — it exists only to
+// prove the injection path works. The build therefore goes to a temp dir, never
+// to dist/: writing it to dist/ would leave a bundle carrying a fake id sitting
+// exactly where a release bundle is expected, and the next person to upload
+// would ship something GD rejects at activation.
+const TEST_ID = process.argv[2] || 'TESTIDNOTREAL00000000000000000000';
+const BUILD_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'nd-build-'));
 console.log('\n── rebuilding bundles ─────────────────────────────────────');
-execFileSync(PY, ['tools/make-itch-zip.py', '--gd-id', TEST_ID], { cwd: ROOT, stdio: 'pipe' });
+console.log(`   build dir: ${BUILD_DIR}  (dist/ untouched)`);
+execFileSync(PY, ['tools/make-itch-zip.py', '--gd-id', TEST_ID, '--out-dir', BUILD_DIR],
+  { cwd: ROOT, stdio: 'pipe' });
 
 const bundles = [
-  { name: 'itch', zip: path.join(DIST, 'neon-drop-itch.zip'), expectNetwork: 'none', expectSdk: false },
-  { name: 'gamedistribution', zip: path.join(DIST, 'neon-drop-gd.zip'), expectNetwork: 'gamedistribution', expectSdk: true },
+  { name: 'itch', zip: path.join(BUILD_DIR, 'neon-drop-itch.zip'), expectNetwork: 'none', expectSdk: false },
+  { name: 'gamedistribution', zip: path.join(BUILD_DIR, 'neon-drop-gd.zip'), expectNetwork: 'gamedistribution', expectSdk: true },
 ];
 
 /* ---- 2. extract each to a temp dir and serve it ------------------------- */
@@ -145,6 +153,21 @@ for (const b of bundles) {
 await browser.close();
 for (const s of servers) s.close();
 fs.rmSync(tmp, { recursive: true, force: true });
+fs.rmSync(BUILD_DIR, { recursive: true, force: true });
+
+// The release artefacts must be exactly as they were before this ran.
+const distGd = path.join(ROOT, 'dist', 'neon-drop-gd.zip');
+if (fs.existsSync(distGd)) {
+  const landed = execFileSync(PY, ['-c',
+    `import zipfile;print(zipfile.ZipFile(r"${distGd}").read("monetize.js").decode())`],
+    { encoding: 'utf8' });
+  const leaked = landed.includes(`gdGameId: '${TEST_ID}',`);
+  record('the test id did NOT leak into the release artefact',
+    !leaked,
+    leaked ? `dist/neon-drop-gd.zip now carries the throwaway id ${TEST_ID}` : 'dist/ untouched by this run');
+} else {
+  console.log('  (dist/neon-drop-gd.zip not present — nothing to check)');
+}
 
 const failed = results.filter((r) => !r.pass).length;
 console.log(`\n${'='.repeat(62)}`);

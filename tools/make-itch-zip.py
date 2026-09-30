@@ -11,6 +11,12 @@ Used for: itch.io, CrazyGames, Poki, Playgama and most of the long tail.
 Run from the repo root:
     python tools/make-itch-zip.py                  -> dist/neon-drop-itch.zip
     python tools/make-itch-zip.py --gd-id <ID>     -> also dist/neon-drop-gd.zip
+    python tools/make-itch-zip.py --gd-id <ID> --out-dir <DIR>   -> write elsewhere
+
+The test harness MUST pass --out-dir. It rebuilds with a throwaway id, and if it
+wrote to dist/ it would leave a bundle carrying a fake id sitting exactly where
+a release bundle is expected — an artefact that looks ready to upload and is
+not. Keeping the two paths apart is the whole point of the flag.
 
 WHY THE GAME ID IS INJECTED AT BUILD TIME, NOT COMMITTED
 --------------------------------------------------------
@@ -72,14 +78,19 @@ def _write_zip(out: Path, contents: dict) -> list:
     if set(names) != set(FILES):
         raise SystemExit("unexpected zip contents")
 
-    print(f"written : {out.relative_to(ROOT)}  {out.stat().st_size / 1024:.1f} KB")
+    try:
+        shown = out.relative_to(ROOT)
+    except ValueError:
+        # --out-dir pointed outside the repo (the test harness does this)
+        shown = out
+    print(f"written : {shown}  {out.stat().st_size / 1024:.1f} KB")
     for info in zipfile.ZipFile(out).infolist():
         print(f"  {info.filename:<16} {info.file_size / 1024:>8.1f} KB uncompressed")
     return names
 
 
-def build_itch(sources: dict) -> None:
-    out = DIST / "neon-drop-itch.zip"
+def build_itch(sources: dict, out_dir: Path) -> None:
+    out = out_dir / "neon-drop-itch.zip"
     _write_zip(out, sources)
 
     # The itch build must NOT carry a game ID: itch.io has no GD SDK, and a
@@ -92,12 +103,12 @@ def build_itch(sources: dict) -> None:
     print("  gdGameId: empty -> itch build stays network-neutral. OK")
 
 
-def build_gd(sources: dict, game_id: str) -> None:
+def build_gd(sources: dict, game_id: str, out_dir: Path) -> None:
     game_id = game_id.strip()
     if not re.fullmatch(r"[A-Za-z0-9_-]{8,64}", game_id):
         raise SystemExit(
             f"that does not look like a GameDistribution game id: {game_id!r}\n"
-            "expected 8-64 chars of [A-Za-z0-9_-], e.g. 49258a0e497c42b5b5d87887f24d27a6"
+            "expected 8-64 chars of [A-Za-z0-9_-]"
         )
 
     js = sources["monetize.js"]
@@ -112,7 +123,7 @@ def build_gd(sources: dict, game_id: str) -> None:
     gd = dict(sources)
     gd["monetize.js"] = js.replace(GD_EMPTY, f"gdGameId: '{game_id}',", 1)
 
-    out = DIST / "neon-drop-gd.zip"
+    out = out_dir / "neon-drop-gd.zip"
     _write_zip(out, gd)
 
     # Read the ID back OUT of the written artefact. Checking the string we just
@@ -132,14 +143,26 @@ def main() -> None:
     ap.add_argument(
         "--gd-id",
         metavar="GAME_ID",
-        help="also build dist/neon-drop-gd.zip with this GameDistribution game id",
+        help="also build neon-drop-gd.zip with this GameDistribution game id",
+    )
+    ap.add_argument(
+        "--out-dir",
+        metavar="DIR",
+        default=None,
+        help=(
+            "write the zips here instead of dist/. Used by the test harness so a "
+            "throwaway id can never overwrite a release artefact."
+        ),
     )
     args = ap.parse_args()
 
+    out_dir = Path(args.out_dir).resolve() if args.out_dir else DIST
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     sources = _read_sources()
-    build_itch(sources)
+    build_itch(sources, out_dir)
     if args.gd_id:
-        build_gd(sources, args.gd_id)
+        build_gd(sources, args.gd_id, out_dir)
     else:
         print("\n(no --gd-id given: GameDistribution bundle not built)")
     print("\nindex.html is at the zip root. OK")
