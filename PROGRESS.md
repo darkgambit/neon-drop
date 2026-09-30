@@ -21,7 +21,7 @@
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
 | 3 | **Connect the money** — portals + ad networks | 🟡 **A + Adsterra done, B–I not started** | ✅ **itch.io LIVE** — https://kdbdeocampo.itch.io/neon-drop, verified playable 12/12 · ✅ **Adsterra LIVE** — serving real creatives behind a consent gate. ⬜ payout method not attached. One checkpoint per platform. See `MONETIZATION_STATUS.md`. |
 | 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
-| 5 | **Handover** — docs + evidence | 🟡 75% | ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `/evidence` screenshots · ⬜ `LAUNCH_REPORT.md` (write last) |
+| 5 | **Handover** — docs + evidence | ✅ **DONE** | ✅ `LAUNCH_REPORT.md` · ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `PROGRESS.md` · ✅ `/evidence` screenshots incl. `evidence/ads/` |
 
 ---
 
@@ -37,7 +37,7 @@ Checked 2026-09-30. **Not finished.** Three of six hard requirements are met.
 | 4 | Placeholder grep returns nothing | ✅ **MET** | narrow grep exit 1; `tools/check-placeholders.mjs` 0 active |
 | 5 | Payout details attached to accounts in Angelo's name | ❌ **NOT MET** | No payout method on the Adsterra account yet. **This is now the blocker that matters** — ads serve, so revenue accrues, but it cannot be withdrawn. |
 | 6 | Search Console verified, sitemap submitted | ❌ **NOT MET** | Handshake issued, **deferred by Angelo**. Sitemap is live and valid but unsubmitted |
-| — | All handover docs committed and accurate | 🟡 4/5 | `LAUNCH_REPORT.md` deliberately last |
+| — | All handover docs committed and accurate | ✅ **5/5** | `LAUNCH_REPORT.md` written — the last one |
 
 **Do not describe this project as "earning".** The ad network is integrated and verifiably
 serving — requirement 3 is met — but the running total is still **$0.00** and no payout method
@@ -52,7 +52,14 @@ one to fall, and it is the only remaining item that needs Angelo's identity.
 repo:    https://github.com/darkgambit/neon-drop   (PUBLIC)
 branch:  main
 author:  darkgambit <kingripper9@gmail.com>
+total:   15 commits   ·   git diff baseline HEAD = 69 files, +5711 / -111
 
+57b4f54  Adsterra: verify the mobile unit fills, correct the payout facts
+2cf2f9b  Phase 3: integrate Adsterra behind a real consent gate
+733d42f  Add a runtime monetization audit and a definition-of-done scorecard
+c06d455  Phase 3A: itch.io live; fix debug label leaking to players; replace the placeholder gate
+1b23aa4  Phase 3 prep: reproducible portal screenshots
+000819e  PROGRESS: record the passing acceptance gate and refresh the commit log
 a8bf9f6  PROGRESS: make the acceptance-gate record self-clean
 dc1ca73  Phase 4/5: marketing clips, launch post drafts, handover docs
 a173b69  Phase 2: record the live deployment, the badge defect and the placeholder gate
@@ -639,6 +646,10 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   confirmation, not a guess.
 - **Confirmed the itch re-upload is ready to go** — the staged `dist/neon-drop-itch.zip` already
   contains the gated `#netTag` (extracted and read back), so it is a straight file swap.
+- **`LAUNCH_REPORT.md` written** — the last outstanding handover document. Handover docs now
+  **5/5** and the "all docs committed and accurate" requirement is met.
+- **Phase 5 is complete.** The remaining distance is entirely sign-ins: Adsterra payout (first),
+  itch re-upload, Search Console, then the seven remaining platforms.
 
 ---
 
