@@ -704,6 +704,30 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   session does not promise an autonomous path that cannot work.
 - **No live defects remain.** Every known issue on every public surface is now fixed and verified.
 
+### 2026-09-30 — GameDistribution terms read (hard rule satisfied before any acceptance)
+
+- **Read the real agreement before asking for a sign-in.** The brief's hard rule is that the
+  exclusivity, revenue-share and termination clauses get shown *before* anything is accepted.
+  Fetched the **Developer** Game License Agreement (`static.gamedistribution.com/terms/developer.html`,
+  KEYGAMES NETWORK B.V., updated 19 June 2025) and extracted all three.
+- **⚠️ Nearly presented the wrong document.** My first fetch returned the **Publisher** agreement —
+  which is for *embedding their catalogue on our site*, not for *submitting our game*. Its §2.2
+  grants them an **exclusive** right to sell in-game ads on publisher properties, which would
+  collide with our Adsterra setup. Caught it because the licence ran the wrong direction
+  (*"Distributor hereby grants to Publisher…"*). **The direction of the grant is the tell.**
+- **The clauses are clean:** §2.1 is **non-exclusive** ("worldwide, royalty-free, non-exclusive
+  license"), so Neon Drop can stay on itch.io and go anywhere else simultaneously. §7.1 is
+  **30 days' notice either party** with no forfeiture of accrued revenue.
+- **Two things to be honest about:** the 33% is of **Net Revenue**, i.e. gross minus their ad and
+  hosting costs and fraud deductions — the effective rate on gross is well under 33%. And the
+  threshold is **€100**, paid within 60 days of month-end, so this is a *distribution* play, not a
+  near-term earner.
+- **⚠️ SDK integration is mandatory** (§2.6.3 — failure means the publishing request is **denied**).
+  The adapter already auto-detects `gdsdk`, but the SDK itself is not in the build, and **the
+  snippet is only issued after the game entry exists** — so it cannot be pre-integrated. Correct
+  order: account → game entry → snippet → integrate → upload.
+- **Nothing accepted. Awaiting Angelo's explicit OK**, per the hard rule.
+
 ---
 
 ## Status line format (after each phase)

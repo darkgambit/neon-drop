@@ -32,7 +32,7 @@ portal — that is a business decision, not a technical one.
 | # | Platform | Type | State | Blocker |
 |---|---|---|---|---|
 | A | **itch.io** | Portal | 🟢 **LIVE** — verified playable | Nothing. Free game ⇒ $0 revenue by design. |
-| B | **GameDistribution** | Portal + ads | ⬜ assets ready | Needs account; then Game ID into `monetize.js` |
+| B | **GameDistribution** | Portal + ads | 🟡 **terms read & clean — awaiting OK** | Exclusivity **non-exclusive** ✅ · 33% of net · €100 threshold · SDK **mandatory** (snippet comes after account creation) |
 | C | **CrazyGames** | Portal | ⬜ assets ready | Needs account + review |
 | D | **Playgama Bridge** | Portal + ads | ⬜ assets ready | Needs account |
 | E | **Poki** | Portal | ⬜ assets ready | Needs account + review |
@@ -281,19 +281,70 @@ new build is **confirmed live** — the itch CDN embed revision changed from `ht
 ### B. GameDistribution
 | | |
 |---|---|
-| Type | Portal + ad network (they monetise the game with their own ads) |
-| Revenue share | ~33% of net revenue *(re-verify against their current terms at signup)* |
-| Payout threshold | €100 |
-| Payout method | Bank / PayPal — **check region eligibility before relying on it** |
+| Type | Portal + ad network — they syndicate your game across their partner network |
+| Revenue share | **33% of Net Revenue** (§3.1) — *net*, not gross |
+| Payout threshold | **€100** (§3.3), accumulates below that, paid within 60 days of month-end |
 | Upload | `dist/neon-drop-itch.zip` |
 | Thumbnail | `dist/art/512x512-square.png` |
-| After approval | Paste the **Game ID** into `gdGameId` in `game/monetize.js`, re-zip with `python tools/make-itch-zip.py`, re-upload, confirm a real ad fires |
-| Exclusivity | ⚠️ **Verify before accepting.** Some portals in this space ask for web exclusivity. |
+| Exclusivity | ✅ **NON-EXCLUSIVE** (§2.1) — "worldwide, royalty-free, non-exclusive license" |
+| Termination | **30 days' notice, either party** (§7.1). Accrued revenue is **not forfeited** |
+| SDK | ⚠️ **MANDATORY** (§2.6.3) — failure to integrate ⇒ **publishing request denied** |
+| Governing law | Netherlands / Amsterdam courts (§9.14) |
 
-The adapter is already wired for this — `game/monetize.js` auto-detects the
-GameDistribution SDK and routes interstitials, rewarded video and banners to it.
-With no network present it falls back to a safe stub, which is why the game never
-breaks when the SDK is absent.
+#### Clauses verified against the real agreement — 2026-09-30
+
+Read from **`static.gamedistribution.com/terms/developer.html`** (Developer Game License Agreement,
+KEYGAMES NETWORK B.V., last updated 19 June 2025).
+
+**1. Exclusivity — clear. ✅ No problem.**
+> §2.1 — *"Developer hereby grants to Distributor a worldwide, royalty-free, **non-exclusive**
+> license…"*
+
+Nothing prevents Neon Drop from being published on itch.io, Poki, CrazyGames or anywhere else at
+the same time. This is the clause that mattered most and it is clean.
+
+**2. Revenue share — 33% of NET, and the deductions are real.**
+> §3.1 — *"the Developer is entitled to a revenue share of 33% (thirty three percent) of the
+> **Net Revenue**"*
+> *"In-Games Ads Revenue" means the gross revenues … **less**: (i) In-Game Ads and Hosting costs;
+> (ii) any applicable Invalid Traffic / Fraud deductions and reservations."*
+
+So 33% is of an already-reduced figure. The effective rate on gross will be **well under 33%** —
+"Net Revenue" is defined as gross minus their ad-platform costs, hosting costs, fraud deductions,
+and (for purchases) payment-provider costs and VAT. There is no cap published on those costs, which
+is the clause to watch if the numbers ever look wrong.
+
+**3. Termination — clean. ✅**
+> §7.1 — *"indefinite duration … with each Party able to terminate this Agreement with
+> **thirty (30) days' notice** at any time."*
+
+No forfeiture of accrued revenue on termination (§7.5 is a standard survival clause). The €100
+threshold still applies after termination, so a small balance can in principle never be paid out —
+worth remembering before pulling the game early.
+
+**4. ⚠️ The SDK is mandatory — and this changes the plan.**
+> §2.6.3 — *"before uploading the Games, **implement the SDK in the Games** as instructed by the
+> Distributor; failure to do this will result in a **denied request for publishing**"*
+
+`game/monetize.js` **already auto-detects `gdsdk`** and routes interstitials and rewarded video to
+it, so the adapter side is done. But the SDK itself is not in the build — `game/index.html`
+currently loads **0** ad SDKs. **The SDK snippet is issued per-game from their dashboard after the
+game entry is created**, so this cannot be pre-integrated. Order: create the account → create the
+game entry → take the snippet → integrate → *then* upload.
+
+**5. Two risks worth naming before accepting.**
+
+- **Distribution ≠ control.** They serve the ads inside the game and report the revenue. §3.6 lets
+  them withhold or claw back payments on *"reasonable suspicion"* of invalid traffic, and §9.1
+  permits recalculation within 90 days. Standard for the industry, but it means the reported number
+  is the only number you get.
+- **Do not confuse the two agreements.** The **Developer** agreement above is for *submitting our
+  game*. The separate **Publisher** agreement is for *embedding their catalogue on our site* — and
+  §2.2 of that one grants them an **exclusive** right to sell in-game ads on our properties. That
+  would collide with our Adsterra setup. **We are not signing the Publisher agreement**, and the
+  §2.2 exclusivity in it is exactly why.
+
+**Status: clauses read and clean. Awaiting Angelo's explicit OK before any agreement is accepted.**
 
 ---
 
