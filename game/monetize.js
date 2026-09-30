@@ -75,6 +75,8 @@
   var Ads = {
     get network() { return _detected; },
     get ready() { return _ready; },
+    /** Whether the host page should render developer-only diagnostics. */
+    get debug() { return !!AD_CONFIG.debug; },
 
     init: function () {
       _detected = detect();

@@ -3,9 +3,10 @@
 > Every platform we are pursuing, what state it is in, and — critically — **what
 > the agreement actually says before anything is accepted.**
 
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
 **Live game:** https://neon-drop.netlify.app
-**Current revenue: $0.00.** Nothing is integrated yet. Nothing has been paid out.
+**itch.io listing:** https://kdbdeocampo.itch.io/neon-drop
+**Current revenue: $0.00.** No ad network is integrated yet. Nothing has been paid out.
 
 ---
 
@@ -28,7 +29,7 @@ portal — that is a business decision, not a technical one.
 
 | # | Platform | Type | State | Blocker |
 |---|---|---|---|---|
-| A | **itch.io** | Portal | ⬜ assets ready | Needs account + upload |
+| A | **itch.io** | Portal | 🟢 **LIVE** — verified playable | Nothing. Free game ⇒ $0 revenue by design. |
 | B | **GameDistribution** | Portal + ads | ⬜ assets ready | Needs account; then Game ID into `monetize.js` |
 | C | **CrazyGames** | Portal | ⬜ assets ready | Needs account + review |
 | D | **Playgama Bridge** | Portal + ads | ⬜ assets ready | Needs account |
@@ -37,6 +38,10 @@ portal — that is a business decision, not a technical one.
 | G | **Ko-fi / Buy Me a Coffee** | Donations | ⬜ not started | Needs account |
 | H | **Adsterra** | Self-hosted ads | ⬜ not started | Needs account — **pays crypto from $5** |
 | I | **Long tail** (Y8, GameMonetize, Newgrounds, Armor Games, freegames.io) | Portals | ⬜ not started | Non-exclusive only |
+
+**Definition-of-done progress:** "game live and publicly playable on ≥1 portal" is now
+**satisfied** by itch.io. Still outstanding: an ad network making verifiable ad requests,
+and payout details attached in Angelo's name.
 
 **Recommended order: A → B → H → F → C → D → E → G → I.**
 
@@ -55,16 +60,30 @@ original order is otherwise preserved.
 | | |
 |---|---|
 | Type | Portal (hosts the playable game) |
+| State | 🟢 **LIVE** — https://kdbdeocampo.itch.io/neon-drop |
+| Published | 2026-09-30 |
 | Cost | Free — you choose the revenue split (default is a 10% platform fee) |
+| Revenue | **$0, by design.** The listing is free-to-play, so itch.io earns nothing directly. Its value is distribution + a canonical link for the marketing posts. |
 | Upload | `dist/neon-drop-itch.zip` — `index.html` flat at the zip root |
 | Cover art | `dist/art/630x500-itch-cover.png`, `dist/art/1280x720-16x9.png` |
-| Review | None — publishes immediately |
-| Exclusivity | None. itch.io is non-exclusive by design. |
+| Review | None — published immediately |
+| Exclusivity | **None.** itch.io is non-exclusive by design. No agreement was signed. |
+| Embed | Served from `html-classic.itch.zone/html/19476821/index.html` |
 | Field values | `PORTAL_SUBMISSION_KIT.md` § A |
 
-**Why first:** no review queue, no exclusivity, and it gives the game a second
-public home immediately. It also becomes the canonical download link for the
-marketing posts.
+**Verified playable, not just "page returns 200".** `.verify/verify-itch.mjs` drives the real
+store page in a real browser — presses *Run game*, waits for the itch CDN iframe, starts a game
+and drops six tiles. **12/12 checks pass**, including `SCORE 0 → 10`, zero console errors, and
+zero failed requests from the game frame.
+
+> The harness deliberately separates **our** failed requests from **itch.io's own page shell**.
+> itch's store page runs a Google Analytics beacon that aborts on close; attributing that to the
+> game would have produced a permanent false failure. Requests are attributed by the frame that
+> issued them (`itch.zone` = ours).
+
+**Open item:** the live listing was uploaded *before* the `#netTag` fix (see below), so it still
+shows the developer label `ad network: none` at the foot of the board. A re-upload of the rebuilt
+zip clears it. Tracked in `PROGRESS.md`.
 
 ---
 

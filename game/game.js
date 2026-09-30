@@ -533,8 +533,14 @@
     var p = (window.Ads ? Ads.init() : Promise.resolve());
     p.then(function () {
       if (window.Ads) { Ads.loadingFinished(); Ads.banner('adTop'); }
+      // Developer diagnostic only. Gated on AD_CONFIG.debug — a player on a
+      // portal must never see "ad network: none" painted on the board.
       var tag = document.getElementById('netTag');
-      if (tag) tag.textContent = window.Ads ? ('ad network: ' + Ads.network) : 'ad network: none';
+      if (tag) {
+        tag.textContent = (window.Ads && Ads.debug)
+          ? ('ad network: ' + Ads.network)
+          : '';
+      }
     });
   }
 

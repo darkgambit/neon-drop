@@ -276,8 +276,20 @@ const { ctx: gctx, page: game } = await newPage(browser);
   const menuVisible = await game.locator('#menuOverlay.on').count();
   record('Start menu overlay is shown on boot', menuVisible === 1);
 
-  const netTag = await game.locator('#netTag').innerText();
-  record('Ad adapter reports its detected network', /ad network:/.test(netTag), `"${netTag}"`);
+  // Ask the adapter directly. This used to scrape `#netTag`'s text, which made
+  // the check depend on a debug label being visible — so hiding that label for
+  // players looked like an adapter failure. Query the real state instead.
+  const netInfo = await game.evaluate(() => ({
+    hasAds: !!window.Ads,
+    network: window.Ads ? window.Ads.network : null,
+    ready: window.Ads ? window.Ads.ready : null,
+    debug: window.Ads ? window.Ads.debug : null,
+  }));
+  record('Ad adapter loaded and reports a detected network',
+    netInfo.hasAds && typeof netInfo.network === 'string' && netInfo.network.length > 0,
+    `network=${netInfo.network} ready=${netInfo.ready}`);
+  record('Ad adapter debug output is OFF in the shipped build', netInfo.debug === false,
+    `debug=${netInfo.debug}`);
 }
 
 section('T2  Drop guide tracks the pointer across all 5 columns');
@@ -512,6 +524,29 @@ section('T12  Console errors and failed requests');
     uniqErr.length ? uniqErr.slice(0, 8).join(' | ') : 'none');
   record('Zero 404s / failed requests', uniqReq.length === 0,
     uniqReq.length ? uniqReq.slice(0, 8).join(' | ') : 'none');
+}
+
+section('T13  No developer-facing text ships to players');
+{
+  // Regression guard. `#netTag` used to render unconditionally, so a player on
+  // a portal saw "ad network: none" painted at the foot of the board. It is now
+  // gated on AD_CONFIG.debug; this makes sure it stays that way.
+  const dctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const dpage = await dctx.newPage();
+  try {
+    await dpage.goto(BASE + '/game/index.html', { waitUntil: 'load' });
+    const play = dpage.locator('#playBtn');
+    if (await play.count()) { await play.click(); await sleep(1400); }
+    const tag = String((await dpage.locator('#netTag').textContent().catch(() => '')) || '').trim();
+    record('Debug network label is hidden from players', tag === '',
+      tag ? `visible text: "${tag}"` : 'empty');
+    const body = await dpage.locator('body').innerText().catch(() => '');
+    const leaks = ['ad network:', 'undefined', 'NaN', '[object Object]'].filter((s) => body.includes(s));
+    record('No dev artefacts in the rendered game text', leaks.length === 0, leaks.join(', ') || 'none');
+  } catch (e) {
+    record('No developer-facing text ships to players', false, e.message.split('\n')[0]);
+  }
+  await dctx.close();
 }
 
 await browser.close();

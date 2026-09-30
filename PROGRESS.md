@@ -19,8 +19,8 @@
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
 | 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 42/42 functional. All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed. Commit `a1b2ad6`. |
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
-| 3 | **Connect the money** — portals + ad networks | ⬜ not started | One checkpoint per platform. All assets ready. See `MONETIZATION_STATUS.md`. |
-| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ⬜ analytics (needs an account) |
+| 3 | **Connect the money** — portals + ad networks | 🟡 **A done, B–I not started** | ✅ **itch.io LIVE** — https://kdbdeocampo.itch.io/neon-drop, verified playable 12/12. One checkpoint per platform. All assets ready. See `MONETIZATION_STATUS.md`. |
+| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
 | 5 | **Handover** — docs + evidence | 🟡 75% | ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `/evidence` screenshots · ⬜ `LAUNCH_REPORT.md` (write last) |
 
 ---
@@ -124,6 +124,99 @@ raw output     : []
 The retired tokens were also removed from the docs that described them (the two briefs, `README.md`,
 `PORTAL_SUBMISSION_KIT.md`) so a future run of this check is genuinely green rather than needing an
 explanation. Only the spelling changed; no instruction lost its meaning.
+
+**Superseded in Phase 3.** This narrow grep is kept only because the brief names it as the
+acceptance gate. Use `node tools/check-placeholders.mjs` — it catches the whole class of
+placeholder rather than three spellings, and it would have caught the `ca-pub-XXXX` form that this
+one missed. See "The acceptance gate was too narrow" under Phase 3.
+
+---
+
+## Phase 3 — the money
+
+### A. itch.io — 🟢 LIVE
+
+| Item | Value |
+|---|---|
+| Listing | **https://kdbdeocampo.itch.io/neon-drop** |
+| Published | 2026-09-30 |
+| Account | `kdbdeocampo` — **not** `darkgambit`. Handles differ across platforms; never build a URL from the GitHub handle. |
+| Embed source | `html-classic.itch.zone/html/19476821/index.html` |
+| Upload | `dist/neon-drop-itch.zip` (3 files, flat at root) |
+| Agreement | **None signed.** itch.io is non-exclusive by design. |
+| Revenue | **$0, by design** — the listing is free-to-play. Value is distribution + a canonical link for the marketing posts. |
+
+**Verified by playing it, not by checking the status code.** `.verify/verify-itch.mjs` drives the
+real store page: presses *Run game*, waits for the itch CDN iframe, starts a game, drops six tiles.
+
+```
+12/12 checks passed
+  SCORE 0 -> 10   ·  6/6 drops registered  ·  zero console errors
+  zero failed requests from the game frame
+```
+
+**Harness lesson:** itch's own store shell runs a Google Analytics beacon that aborts on close.
+The first run reported it as a failure. Fixed by attributing failed requests to the **frame that
+issued them** — `itch.zone` is ours, `itch.io` is their shell. Same product-vs-harness split as
+the Netlify badge earlier: a check that fails for reasons outside the product is a broken check.
+
+**Open item — the live listing is one revision behind.** It was uploaded before the `#netTag` fix
+below, so it still paints `ad network: none` at the foot of the board. The rebuilt zip fixes it;
+it needs a re-upload.
+
+### Defect found and fixed: the debug label shipped to players
+
+`game/game.js` set `#netTag` unconditionally:
+
+```js
+if (tag) tag.textContent = window.Ads ? ('ad network: ' + Ads.network) : 'ad network: none';
+```
+
+So every player on a portal saw **"ad network: none"** in 10px text at the bottom of the board.
+`AD_CONFIG.debug` already existed but nothing was gated on it.
+
+**Fix:** `Ads` now exposes `get debug()`, and the label renders only when it is true. Verified on
+both localhost and production.
+
+**Second-order fix:** the old check `'Ad adapter reports its detected network'` scraped
+`#netTag`'s text — it was testing a debug label, not the adapter. Hiding the label made it fail,
+which looked like an adapter regression. It now queries `window.Ads.network` / `.ready` / `.debug`
+directly, and asserts `debug === false` in the shipped build.
+
+### The acceptance gate was too narrow — replaced
+
+The original gate searched the repo for three literal spellings: a domain placeholder, an email
+placeholder, and an all-zero AdSense publisher ID. (Not quoted here on purpose — see the
+self-clean note under "Acceptance gate" above. Writing them out in this file would make the gate
+fail on its own documentation, which is the mistake this section is about.)
+
+It passed while `index.html:17` still carried `ca-pub-XXXXXXXXXXXXXXXX` — a *different spelling*
+of the same idea, inside an inert HTML comment. A gate that only knows the strings you already
+found gives false confidence.
+
+**`tools/check-placeholders.mjs`** replaces it. It scans the **deployable set** (mirroring
+`tools/build-site.mjs`) for placeholder *shapes* — domains, emails, AdSense/ads.txt publisher IDs,
+API keys, `__TEMPLATE__` slots, lorem ipsum, TODO/FIXME — and strips comments first, preserving
+line numbers, so it can separate:
+
+- **ACTIVE** — matches in code that runs. Exit code 1.
+- **INERT** — matches only inside a comment. Intentional instruction text. Reported, not failed.
+
+Current result: **0 active, 2 inert** (`index.html:17` and `game/monetize.js:27`, both AdSense
+instructions). Both are deliberate; neither executes.
+
+Two bugs in my own first version, both caught by running it: I guessed the blog filenames
+(they are `best-free-browser-puzzle-games.html`, `cascade-strategy.html`,
+`how-merge-scoring-works.html`), and my JS comment detection only recognised lines *starting*
+with `//`, so a **trailing** comment was misread as live code. Replaced the heuristic with a
+real comment stripper that respects string literals and escapes.
+
+### Deploy gotcha: `_site` cannot be rebuilt while a server is serving it
+
+`netlify deploy --prod` failed with `Error while running build` because `tools/build-site.mjs`
+deletes and recreates `_site/` — and a background `python -m http.server` was running with
+`_site` as its working directory. On Windows you cannot remove a directory that is a live
+process's CWD. **Kill the local server before deploying.**
 
 ---
 

@@ -86,15 +86,39 @@ the game itself has zero dependencies and that should stay true.
 **Netlify CLI gotcha:** there is no `node_modules/.bin/netlify` shim on this machine.
 Always call `bin/run.js` directly, as above.
 
+**Deploy gotcha — `_site` is locked while a server serves it.** `tools/build-site.mjs`
+deletes and recreates `_site/` on every run, and `netlify deploy` runs that build first. If a
+local server is running **with `_site` as its working directory**, Windows will not let the
+directory be removed and the deploy dies with `Error while running build`:
+
+```
+[build-site] failed: Error: [safe-delete] 操作失败: ... _site
+```
+
+Kill the local server before deploying. Starting it from the repo root and pointing it at
+`_site` still holds the handle — stop it, don't just stop using it.
+
 ---
 
 ## Tests
 
 | Command | What it does |
 |---|---|
-| `node .verify/verify.mjs http://127.0.0.1:8080` | 42 functional checks (also accepts the live URL) |
+| `node .verify/verify.mjs http://127.0.0.1:8080` | 45 functional checks (also accepts the live URL) |
+| `node .verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed (12 checks) |
 | `node .verify/lighthouse.mjs http://127.0.0.1:8080` | perf/a11y/best-practices/SEO gate |
+| `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |
+| `node tools/shot-portal.mjs [url] [outDir]` | 3 store screenshots at 1040×2060, seeded and reproducible |
+| `node tools/build-site.mjs` | stage `_site/` from the allowlist; refuses to stage a forbidden file |
+
+**Serve the staged build, not the repo root.** `_site` is what actually deploys, so testing the
+repo root can pass while production differs:
+
+```bash
+node tools/build-site.mjs
+cd _site && python -m http.server 8080     # then stop it before deploying
+```
 
 ### How the harness works (so you don't "fix" it by accident)
 
