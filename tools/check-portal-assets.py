@@ -16,6 +16,11 @@ So the slots are asserted here instead:
     512x512  required (main thumbnail)
     200x120  required (main thumbnail)
     1280x720 helpful for marketing
+    1280x550 helpful for marketing
+
+The 1280x550 banner is the easy one to miss: it is 2.33:1 against a 1.79:1 source, so it needs a
+HEIGHT crop, and a centred crop slices the "NEON DROP" wordmark in half. It is generated with an
+upward bias (fy=0.17) for that reason.
 
 Run from the repo root:
     python tools/check-portal-assets.py
@@ -40,6 +45,7 @@ SLOTS = [
     ("512x512-square",    512,  512, "required (main thumbnail)"),
     ("200x120-gd",        200,  120, "required (main thumbnail)"),
     ("1280x720-16x9",    1280,  720, "helpful for marketing"),
+    ("1280x550-banner",  1280,  550, "helpful for marketing"),
 ]
 
 # GameDistribution accepts .jpg/.jpeg. PNG is kept alongside for other portals.

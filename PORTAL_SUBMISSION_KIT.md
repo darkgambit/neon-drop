@@ -95,6 +95,7 @@ match, single player, arcade
 | `dist/art/512x512-square.jpg` | 53 KB | **GameDistribution 512×512** (required, .jpg); Poki icon, Playgama |
 | `dist/art/200x120-gd.jpg` | 8.5 KB | **GameDistribution 200×120** (required, .jpg) |
 | `dist/art/1280x720-16x9.jpg` | 125 KB | **GameDistribution 1280×720** (marketing, optional); itch.io |
+| `dist/art/1280x550-banner.jpg` | 103 KB | **GameDistribution 1280×550** (marketing, optional) |
 | `dist/neon-drop-itch.zip` | 10.4 KB | Upload build — `index.html` at zip root |
 | `dist/art/800x450-crazygames.png` | 392 KB | CrazyGames thumbnail (16:9) |
 | `dist/art/1920x1080-16x9.png` | 1.7 MB | Large 16:9 where requested |
@@ -262,7 +263,7 @@ Neon Drop is a free browser merge puzzle. Aim a glowing tile at any of five colu
 Mouse: move the pointer across the board to choose a column, then click to drop the tile. Touch: drag to aim, then tap to drop. Keyboard: use the left and right arrow keys to aim, then press Space to drop. Tiles that touch and match merge into one tile of double the value. Chain several merges in a single drop to build a combo multiplier and score far higher.
 ```
 
-#### The four image slots — **JPG, not PNG**
+#### The five image slots — **JPG, not PNG**
 
 Confirmed against the live upload form, which advertises *"Choose a .jpg or .jpeg file…"* on every
 slot. **A PNG is refused at the file picker.** The generator emits both formats; upload the `.jpg`.
@@ -273,6 +274,11 @@ slot. **A PNG is refused at the file picker.** The generator emits both formats;
 | 512 × 512 | `dist/art/512x512-square.jpg` | ✅ required (main thumbnail) |
 | 200 × 120 | `dist/art/200x120-gd.jpg` | ✅ required (main thumbnail) |
 | 1280 × 720 | `dist/art/1280x720-16x9.jpg` | "helpful for marketing" — optional |
+| 1280 × 550 | `dist/art/1280x550-banner.jpg` | "helpful for marketing" — optional |
+
+⚠️ **The 1280×550 banner is the one to watch.** It is **2.33:1** against a **1.79:1** source, so it
+needs a *height* crop — and a centred crop cuts the "NEON DROP" wordmark in half. It is generated
+with an upward bias (`fy=0.17`); don't "simplify" that back to 0.5.
 
 Regenerate all sizes in both formats (also fixes the old left-edge crop, which cut the right-hand
 tiles out of frame):

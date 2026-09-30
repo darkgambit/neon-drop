@@ -852,6 +852,24 @@ my own correction:
 - **Lesson worth keeping:** "check the thumbnail sizes" was not enough. Check the **container
   format** too. A slot can be exactly the right dimensions and still be un-uploadable.
 
+### 2026-09-30 — a fifth slot: **1280×550**
+
+Angelo's second screenshot showed one more marketing slot below the fold — **1280×550**, `.jpg`,
+"helpful for marketing". The earlier screenshot had been cut off just above it, which is why it was
+missed; the form is taller than one screen.
+
+- It is not a resize of the 1280×720. **2.33:1 against a 1.79:1 source**, so it needs a *height*
+  crop — and a centred crop (`fy=0.5`) starts at source y=88 while the "NEON DROP" wordmark sits at
+  roughly y=60–110, i.e. **it slices the title in half.** Generated with an upward bias, `fy=0.17`
+  (crop y=30..621), which keeps the wordmark with headroom and still shows the board.
+- `tools/make-portal-thumbs.py` and `tools/check-portal-assets.py` both updated; the gate now
+  asserts **five** slots. All pass — 512×384 44 KB · 512×512 53 KB · 200×120 8.5 KB ·
+  1280×720 125 KB · **1280×550 103 KB**.
+- **Both screenshot-driven catches were the same shape:** the written guidelines were accurate as
+  far as they went, and the *form* carried the detail that actually blocks an upload — the container
+  format, and a slot that only existed below the fold. When a human can see the real form, ask for
+  it; a screenshot beat two rounds of documentation reading.
+
 ---
 
 ## Status line format (after each phase)

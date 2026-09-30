@@ -285,7 +285,7 @@ new build is **confirmed live** — the itch CDN embed revision changed from `ht
 | Revenue share | **33% of Net Revenue** (§3.1) — *net*, not gross |
 | Payout threshold | **€100** (§3.3), accumulates below that, paid within 60 days of month-end |
 | Upload | `dist/neon-drop-gd.zip` (the id-injected build — **not** the itch zip) |
-| Thumbnails | **four `.jpg` slots** (PNG is refused by the picker): `dist/art/512x384-gd.jpg`, `dist/art/512x512-square.jpg`, `dist/art/200x120-gd.jpg`, `dist/art/1280x720-16x9.jpg` |
+| Thumbnails | **five `.jpg` slots** (PNG is refused by the picker): `512x384-gd.jpg`, `512x512-square.jpg`, `200x120-gd.jpg` (required) + `1280x720-16x9.jpg`, `1280x550-banner.jpg` (marketing) |
 | Exclusivity | ✅ **NON-EXCLUSIVE** (§2.1) — "worldwide, royalty-free, non-exclusive license" |
 | Termination | **30 days' notice, either party** (§7.1). Accrued revenue is **not forfeited** |
 | SDK | ⚠️ **MANDATORY** (§2.6.3) — failure to integrate ⇒ **publishing request denied** |
@@ -301,7 +301,7 @@ this file quoted the marketing page instead and got several things wrong; correc
 | **Description** | **200–500 characters, hard limit.** The long description elsewhere is ~1,800 — it would have been rejected. New copy: **414** chars. |
 | **Instructions** | **200–500 characters, hard limit.** Previous answer was ~140. New copy: **361** chars. |
 | Genres / tags | **1–2 genres**, **1–5 tags** |
-| Thumbnails | **all three required, as `.jpg`** — the form advertises ".jpg or .jpeg" and refuses PNG. Plus an optional 1280×720 "helpful for marketing" slot. |
+| Thumbnails | **three required as `.jpg`** (the form refuses PNG) **plus two optional marketing images**: 1280×720 and **1280×550**. The 1280×550 is 2.33:1 against a 1.79:1 source — it needs a height crop biased upward, or the wordmark gets sliced. |
 | Age groups | **mandatory** to select |
 | Language | English (or `No-Text`) |
 | **Rewarded-ads flag** | ⚠️ **must be ticked** or "your game is unable to request rewarded ads" — a dashboard control, not a text field |

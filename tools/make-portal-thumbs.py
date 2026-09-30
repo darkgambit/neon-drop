@@ -57,8 +57,9 @@ SIZES = [
     ("512x384-gd",              512,  384, 0.50),
     ("512x512-square",          512,  512, 0.40),
     ("200x120-gd",              200,  120, 0.50),
-    # "Helpful for marketing" slot on the same form.
+    # "Helpful for marketing" slots on the same form.
     ("1280x720-16x9",          1280,  720, 0.50),
+    ("1280x550-banner",        1280,  550, 0.17),
     # Other portals.
     ("800x450-crazygames",      800,  450, 0.50),
     ("1920x1080-16x9",         1920, 1080, 0.50),
