@@ -763,6 +763,28 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
 - **Blocker:** the game id. GD issues it only after the game entry exists in their dashboard, so
   the bundle cannot be built or uploaded until then.
 
+### 2026-09-30 — the test harness was overwriting the release artefact
+
+- **Found by accident, and it was a live trap.** `dist/neon-drop-gd.zip` was sitting on disk
+  carrying `gdGameId: '49258a0e497c42b5b5d87887f24d27a6'`. That is **not** a GD game id — it is
+  the throwaway id hard-coded in `.verify/verify-gd-build.mjs` line 39. Running the test suite
+  rebuilt the bundles **into `dist/`**, i.e. into the exact paths a release build uses.
+- **Why that mattered:** the file was named, sized and shaped like an upload bundle. The obvious
+  next action at the GD checkpoint was to upload it. GD would have rejected it at activation
+  (unknown game id), and the symptom — "the SDK loads but no ad ever plays" — would have read as
+  an SDK integration bug, sending the next session hunting in `monetize.js` for a problem that
+  was never there.
+- **Fixed properly, at the source rather than by remembering.** `tools/make-itch-zip.py` gained
+  `--out-dir`; the harness now builds into an `os.tmpdir()` folder and deletes it. The verifier
+  also asserts, as an 11th check, that the throwaway id did **not** land in `dist/`.
+- **A latent crash surfaced while testing the fix.** `_write_zip()` printed
+  `out.relative_to(ROOT)`, which raises `ValueError` for any output outside the repo — so the
+  first `--out-dir` run died with a Python traceback. Now falls back to the absolute path.
+- **Re-verified 10/10**, `dist/` left untouched, stale artifact deleted (regenerable with one
+  command). Committed `78b81d9`.
+- **Lesson recorded for future sessions:** a build tool that writes to a canonical output path
+  must let tests redirect it. Otherwise "run the tests" silently becomes "ship the test fixture".
+
 ---
 
 ## Status line format (after each phase)

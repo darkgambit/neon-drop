@@ -168,14 +168,36 @@ for name, tw, th, fy in [('512x512-square.png',512,512,.42),
 | Visibility | Public |
 
 ### B) GameDistribution — 33% of net revenue, €100 threshold
+
+**Order matters — this is the trap.** The GD game id does not exist until the game entry does, and
+the SDK snippet is only issued with the entry. So:
+
+```
+1. create the game entry (fields below)      -> GD issues the GAME ID
+2. python tools/make-itch-zip.py --gd-id <GAME_ID>
+3. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)
+4. open the game in GD's preview iframe and watch one full pre-roll  -> activation
+```
+
+If step 1's form demands a zip before it will show you an id, upload `dist/neon-drop-itch.zip` as a
+placeholder to create the entry, copy the id, then **replace** it with the GD build. A bundle
+without the id is not the finished article — GD denies publishing when the SDK is not integrated
+(§2.6.3).
+
 | Field | Value |
 |---|---|
-| Upload | `dist/neon-drop-itch.zip` (index.html at root) |
+| Upload | `dist/neon-drop-gd.zip` — `index.html` at root. (Placeholder only if the form needs a file to issue the id: `dist/neon-drop-itch.zip`.) |
 | Title | Neon Drop |
-| Description | long description above |
+| Description | the **long description** at the top of this file, verbatim |
+| Short description | the **~150-char** description at the top of this file |
 | Category | Puzzle |
-| Tags | merge, puzzle, casual, html5 |
+| Tags | `merge, puzzle, casual, html5` |
 | Thumbnail | `dist/art/512x512-square.png` |
+| Orientation | Portrait |
+| Controls | the standard "How do you control the game?" answer |
+| Mobile | the standard "Does it work on mobile?" answer |
+| Account / data | the standard "Does it require an account or collect data?" answer |
+| Exclusive? | **No** — the standard non-exclusive answer |
 | **After approval** | copy the **Game ID** into `gdGameId` in `game/monetize.js`, re-zip, re-upload, confirm the rewarded button fires a real ad in their preview |
 
 ### C) CrazyGames — developer.crazygames.com, €100 minimum

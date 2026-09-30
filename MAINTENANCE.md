@@ -212,6 +212,16 @@ a bundle with no game id (which GD denies).
 Verify the split with `node .verify/verify-gd-build.mjs` — it loads both real bundles in a browser
 and asserts what the adapter *does*, not what the file says.
 
+**Never call `make-itch-zip.py` with a throwaway id without `--out-dir`.** Without it the bundle
+lands in `dist/` under the same name a release build uses — a file that looks uploadable and
+isn't. The verifier passes `--out-dir` and builds into a temp folder for exactly this reason;
+keep it that way if you edit the harness.
+
+```bash
+# what the harness does — throwaway id, real dist/ untouched
+python tools/make-itch-zip.py --gd-id TESTIDNOTREAL00000000000000000000 --out-dir /tmp/nd-build
+```
+
 ### The pre-roll and the stuck-pause backstop
 
 GD requires a pre-roll on the Play button. `preRollThenStart()` fires `Ads.interstitial()` and
