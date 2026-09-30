@@ -472,8 +472,22 @@
 
   /* ---------------------------------------------------------- loop */
   var last = performance.now(), paused = false;
-  window.addEventListener('ads:pause', function () { paused = true; });
-  window.addEventListener('ads:resume', function () { paused = false; last = performance.now(); });
+  /* Backstop against a third-party ad freezing the game forever. An ad is
+     supposed to resume us via the SDK's own event (GD: SDK_GAME_START), but a
+     blocked or broken SDK fires the pause and never the resume — leaving the
+     board frozen with no way out. Generous enough never to interrupt a real
+     ad, short enough that the game cannot become unplayable. */
+  var pauseGuard = null;
+  function resumePlay() {
+    clearTimeout(pauseGuard); pauseGuard = null;
+    paused = false; last = performance.now();
+  }
+  window.addEventListener('ads:pause', function () {
+    paused = true;
+    clearTimeout(pauseGuard);
+    pauseGuard = setTimeout(resumePlay, 90000);
+  });
+  window.addEventListener('ads:resume', resumePlay);
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { paused = true; } else { paused = false; last = performance.now(); }
   });
@@ -517,13 +531,38 @@
     }
   }
 
+  /* --------------------------------------------------- pre-roll on Play */
+  /* GameDistribution REQUIRES a pre-roll ad on the Play/Start button
+     ("Before you submit, make sure that your game includes a pre-roll"), and
+     it is normal practice for every ad-monetised web game. Their mid-roll
+     guidance — Game Over / Win screen buttons — is already satisfied by
+     gameOver() and the two rewarded buttons.
+
+     FIRE AND FORGET, then start. This is deliberate and it follows GD's own
+     reference implementation, which calls showAd() on the button and lets the
+     SDK pause the game via SDK_GAME_PAUSE rather than awaiting the promise.
+
+     The first version of this awaited Ads.interstitial() before starting, and
+     a live test caught the flaw: when the SDK is present but its promise never
+     settles (no HTTPS, no ad server, a blocked script), the Play button stays
+     disabled and the player is trapped on the menu. A portal rejects a game
+     that can dead-end. Starting immediately and pausing via the event removes
+     that failure mode entirely — the game is always reachable.
+
+     Skipped when no network is present, so our own site and the itch.io build
+     behave exactly as before. */
+  function preRollThenStart() {
+    if (window.Ads && Ads.network !== 'none') Ads.interstitial();
+    startGame();
+  }
+
   /* ---------------------------------------------------------- boot */
   function boot() {
     load();
     resize();
     newGrid();
     document.getElementById('bestMenu').textContent = best.toLocaleString();
-    document.getElementById('playBtn').addEventListener('click', startGame);
+    document.getElementById('playBtn').addEventListener('click', preRollThenStart);
     document.getElementById('againBtn').addEventListener('click', startGame);
     document.getElementById('reviveBtn').addEventListener('click', revive);
     document.getElementById('dblBtn').addEventListener('click', doubleCoins);

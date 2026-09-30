@@ -32,7 +32,7 @@ portal — that is a business decision, not a technical one.
 | # | Platform | Type | State | Blocker |
 |---|---|---|---|---|
 | A | **itch.io** | Portal | 🟢 **LIVE** — verified playable | Nothing. Free game ⇒ $0 revenue by design. |
-| B | **GameDistribution** | Portal + ads | 🟡 **terms read & clean — awaiting OK** | Exclusivity **non-exclusive** ✅ · 33% of net · €100 threshold · SDK **mandatory** (snippet comes after account creation) |
+| B | **GameDistribution** | Portal + ads | 🟡 **account created · integration ready · needs the game id** | Exclusivity **non-exclusive** ✅ · 33% of net · €100 threshold · SDK + pre-roll done · id injected at build time |
 | C | **CrazyGames** | Portal | ⬜ assets ready | Needs account + review |
 | D | **Playgama Bridge** | Portal + ads | ⬜ assets ready | Needs account |
 | E | **Poki** | Portal | ⬜ assets ready | Needs account + review |
@@ -344,7 +344,78 @@ game entry → take the snippet → integrate → *then* upload.
   would collide with our Adsterra setup. **We are not signing the Publisher agreement**, and the
   §2.2 exclusivity in it is exactly why.
 
-**Status: clauses read and clean. Awaiting Angelo's explicit OK before any agreement is accepted.**
+**Status: clauses read and clean. Account created 2026-09-30. Awaiting the game id.**
+
+#### Integration — prepared, awaiting the game id
+
+The mandatory SDK work is done **except** the id itself, which their dashboard only issues after
+the game entry exists.
+
+**How the two builds stay isolated.** `game/monetize.js` loads the GD SDK **only when
+`AD_CONFIG.gdGameId` is non-empty**. That single condition does all the work:
+
+| Build | `gdGameId` | Adapter reports | GD SDK fetched? |
+|---|---|---|---|
+| Our site (`/game/*`) | empty | `none` | **no** |
+| itch.io bundle | empty | `none` | **no** |
+| GameDistribution bundle | set | `gamedistribution` | yes |
+
+So the id is **injected at build time, never committed**. If it lived in the shared source, every
+build would fetch GD's SDK — including our own pages, where it would slow the site down and
+collide with the Adsterra setup.
+
+```
+python tools/make-itch-zip.py               -> dist/neon-drop-itch.zip
+python tools/make-itch-zip.py --gd-id <ID>  -> also dist/neon-drop-gd.zip
+```
+
+The builder refuses to ship the itch bundle if `gdGameId` is non-empty, and reads the id back
+**out of the written zip** rather than trusting the string it just built.
+
+**Verified at runtime, not just in the file** — `.verify/verify-gd-build.mjs`, **10/10**:
+
+```
+── itch bundle ──
+  network=none · GD SDK requests=0 · gdGameId="" · game starts · no console errors
+── gamedistribution bundle ──
+  network=gamedistribution · GD SDK requests=1 · game starts · no console errors from our code
+```
+
+#### The pre-roll requirement — and a bug the test caught
+
+GD requires a **pre-roll** ad on the Play button (§ "Before you submit, make sure that your game
+includes a pre-roll"). Neon Drop had none: `gameOver()` fires a mid-roll and the two rewarded
+buttons are on the Game Over screen, which is exactly GD's recommended placement — but the Play
+button started the game silently.
+
+**My first fix was wrong, and a live test proved it.** I awaited `Ads.interstitial()` before
+starting the game, disabling the Play button meanwhile. On the GD bundle the test showed the menu
+still showing after the click: GD's SDK was present, its promise never settled, and the button
+stayed disabled — **a dead-end on the menu**, which is a portal rejection. The guard I had added
+(45 s) would have meant 45 seconds of a frozen menu.
+
+**Correct design: fire and forget, then start.** This follows GD's own reference implementation,
+which calls `showAd()` on the button and lets the SDK pause the game through `SDK_GAME_PAUSE`
+rather than awaiting a promise. `game.js` now:
+
+```js
+function preRollThenStart() {
+  if (window.Ads && Ads.network !== 'none') Ads.interstitial();
+  startGame();
+}
+```
+
+The game is always reachable, and the ad pauses it via the event. Skipped entirely when no network
+is present, so our own site and the itch build behave exactly as before.
+
+**Backstop added:** a stuck pause can no longer freeze the board forever. `ads:pause` arms a 90 s
+watchdog that force-resumes; `ads:resume` clears it. A blocked SDK that fires the pause and never
+the resume would otherwise leave the game frozen with no way out.
+
+**Mute requirement: satisfied by absence.** GD requires the game to be muted during ads. Neon Drop
+has **no audio at all** — no `Audio`, no `sound`, no `.play()` anywhere in `game.js` or
+`index.html` — so there is nothing to mute. Recorded explicitly so a future session does not
+"add mute handling" to a silent game.
 
 ---
 

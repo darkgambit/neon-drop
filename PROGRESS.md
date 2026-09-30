@@ -580,14 +580,15 @@ tile values deterministic. **No game code was modified to make it testable.**
 |---|---|
 | `tools/build-site.mjs` | stages the public allowlist into `_site/`, asserts nothing private leaked |
 | `tools/make-og-cover.py` | crops `cover.png` → 1200×630 `og-cover.jpg` |
-| `tools/make-itch-zip.py` | builds `dist/neon-drop-itch.zip`, `index.html` flat at root |
+| `tools/make-itch-zip.py` | builds `dist/neon-drop-itch.zip`, `index.html` flat at root. `--gd-id <ID>` also builds `dist/neon-drop-gd.zip` with the GD game id injected |
 | `tools/record-clips.mjs` | records the 10 vertical marketing clips; `--only <id>` for one, `--captions-only` to rebuild the sheet |
 | `tools/shot.mjs` | evidence screenshots of a running site (desktop + mobile) |
 | `tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `.verify/verify.mjs` | 47-check functional suite — `node .verify/verify.mjs <baseUrl>` |
 | `.verify/verify-ads.mjs` | consent gate + ad rendering, 4 visitor paths, 18 checks |
 | `.verify/shot-ads-evidence.mjs` | `evidence/ads/` — ad request log + screenshots of each rendered unit |
-| `.verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed, 12 checks |
+| `.verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed, 14 checks |
+| `.verify/verify-gd-build.mjs` | proves the itch and GameDistribution bundles are isolated, 10 checks |
 | `.verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `.verify/lighthouse.mjs` | Lighthouse gate — `node .verify/lighthouse.mjs <baseUrl>` |
 
@@ -727,6 +728,40 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   snippet is only issued after the game entry exists** — so it cannot be pre-integrated. Correct
   order: account → game entry → snippet → integrate → upload.
 - **Nothing accepted. Awaiting Angelo's explicit OK**, per the hard rule.
+
+### 2026-09-30 — GameDistribution: account created, SDK + pre-roll integrated
+
+- **Account created** after the clauses were shown. Informed consent satisfied: the exclusivity,
+  revenue-share and termination clauses were presented before the sign-up.
+- **Found a real gap against GD's requirements.** GD mandates a **pre-roll** ad on the Play
+  button; Neon Drop had none. The mid-roll (`gameOver()`) and the two rewarded buttons were
+  already in exactly the right place — GD's recommended Game Over / Win screen buttons — so the
+  pre-roll was the only missing piece.
+- **⚠️ My first fix was wrong and the test caught it.** I awaited `Ads.interstitial()` before
+  starting, disabling Play meanwhile. On the GD bundle the live test showed the menu still up
+  after the click: GD's SDK was present, its promise never settled, and the button stayed
+  disabled — **a dead-end on the menu**, which is a portal rejection. My own 45 s guard would
+  have meant 45 seconds of a frozen menu.
+- **Correct design: fire and forget, then start** — following GD's own reference implementation,
+  which calls `showAd()` on the button and lets `SDK_GAME_PAUSE` pause the game rather than
+  awaiting a promise. Skipped entirely when no network is present, so our site and itch are
+  unchanged.
+- **Added a stuck-pause backstop.** `ads:pause` arms a 90 s watchdog that force-resumes;
+  `ads:resume` clears it. A blocked SDK that fires the pause and never the resume would otherwise
+  freeze the board with no way out.
+- **Mute requirement satisfied by absence** — the game has no audio at all (no `Audio`, `sound`
+  or `.play()` anywhere), so there is nothing to mute. Documented so nobody "adds mute handling"
+  to a silent game.
+- **Build isolation implemented and proven.** The GD game id is **injected at build time, never
+  committed**; the adapter only fetches GD's SDK when `gdGameId` is non-empty. New
+  `.verify/verify-gd-build.mjs` loads both real bundles in a browser and asserts what the adapter
+  actually does — **10/10**: itch reports `none` with **0** SDK requests, GD reports
+  `gamedistribution` with 1, and both still start the game.
+- **The builder reads the id back out of the written zip** rather than trusting the string it just
+  built, and refuses to ship the itch bundle if `gdGameId` is non-empty.
+- **Regression-checked:** production `verify.mjs` **47/47**, `verify-ads.mjs` **18/18**. Deployed.
+- **Blocker:** the game id. GD issues it only after the game entry exists in their dashboard, so
+  the bundle cannot be built or uploaded until then.
 
 ---
 

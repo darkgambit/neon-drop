@@ -109,6 +109,7 @@ Kill the local server before deploying. Starting it from the repo root and point
 | `node .verify/shot-ads-evidence.mjs <baseUrl>` | writes `evidence/ads/` — request log + screenshots of each rendered unit |
 | `node .verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `node .verify/verify-itch.mjs` | drives the real itch.io store page, plays the embed, and reads the rendered frame for dev artefacts (14 checks) |
+| `node .verify/verify-gd-build.mjs [gameId]` | rebuilds both portal bundles and proves they are isolated — itch stays `none` with 0 SDK requests, GD loads the SDK (10 checks) |
 | `node .verify/lighthouse.mjs <baseUrl>` | perf/a11y/best-practices/SEO gate |
 | `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |
@@ -179,6 +180,10 @@ Consequences:
 # portal upload bundle -> dist/neon-drop-itch.zip (index.html flat at the root)
 python tools/make-itch-zip.py
 
+# ALSO build the GameDistribution bundle with its game id injected
+# -> dist/neon-drop-gd.zip
+python tools/make-itch-zip.py --gd-id <GD_GAME_ID>
+
 # social preview image -> og-cover.jpg (1200x630, ~83 KB)
 python tools/make-og-cover.py
 
@@ -191,6 +196,34 @@ node tools/record-clips.mjs --only 03-cascade-chain
 
 Re-run `make-itch-zip.py` **after any change to `game/`** — the zip is a snapshot,
 and a stale zip is how a portal ends up serving an old build.
+
+### Why the GD game id is injected, not committed
+
+`game/monetize.js` fetches the GameDistribution SDK **only when `AD_CONFIG.gdGameId` is
+non-empty**. That one condition keeps the platforms apart: our own site and the itch.io bundle
+leave it empty, so they never load the SDK and stay ad-neutral with Adsterra as the only ad
+system. Committing the id would make *every* build fetch it.
+
+The builder enforces this — it **refuses to ship the itch bundle** if `gdGameId` is non-empty, and
+reads the id back **out of the written zip** rather than trusting the string it just built. If
+`game/monetize.js` ever changes the shape of that line, the build fails loudly instead of shipping
+a bundle with no game id (which GD denies).
+
+Verify the split with `node .verify/verify-gd-build.mjs` — it loads both real bundles in a browser
+and asserts what the adapter *does*, not what the file says.
+
+### The pre-roll and the stuck-pause backstop
+
+GD requires a pre-roll on the Play button. `preRollThenStart()` fires `Ads.interstitial()` and
+then starts the game **immediately** — it deliberately does *not* await the promise. Awaiting it
+was the first implementation and it dead-ended: with the SDK present but its promise never
+settling, the Play button stayed disabled and the player was trapped on the menu. GD's own
+reference implementation doesn't await either; it relies on `SDK_GAME_PAUSE` to pause the game.
+
+`ads:pause` also arms a **90 s watchdog** that force-resumes, cleared by `ads:resume`. Without it,
+an SDK that fires the pause and never the resume freezes the board permanently.
+
+Both are skipped when `Ads.network === 'none'`, so our site and the itch build are unaffected.
 
 ---
 
