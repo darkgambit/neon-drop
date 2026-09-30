@@ -32,7 +32,7 @@ portal — that is a business decision, not a technical one.
 | # | Platform | Type | State | Blocker |
 |---|---|---|---|---|
 | A | **itch.io** | Portal | 🟢 **LIVE** — verified playable | Nothing. Free game ⇒ $0 revenue by design. |
-| B | **GameDistribution** | Portal + ads | 🟡 **account created · integration ready · needs the game id** | Exclusivity **non-exclusive** ✅ · 33% of net · €100 threshold · SDK + pre-roll done · id injected at build time |
+| B | **GameDistribution** | Portal + ads | 🟡 **account created · integration ready · needs the game id** | Exclusivity **non-exclusive** ✅ · 33% of net · €100 threshold · SDK + pre-roll + mid-roll done · id injected at build time · **submission copy rewritten to their 200–500 char limits**, 3 thumbnails generated · rewarded gate fixed (8/8) · ⚠️ **rewarded-ads flag must be ticked in the dashboard** |
 | C | **CrazyGames** | Portal | ⬜ assets ready | Needs account + review |
 | D | **Playgama Bridge** | Portal + ads | ⬜ assets ready | Needs account |
 | E | **Poki** | Portal | ⬜ assets ready | Needs account + review |
@@ -284,12 +284,42 @@ new build is **confirmed live** — the itch CDN embed revision changed from `ht
 | Type | Portal + ad network — they syndicate your game across their partner network |
 | Revenue share | **33% of Net Revenue** (§3.1) — *net*, not gross |
 | Payout threshold | **€100** (§3.3), accumulates below that, paid within 60 days of month-end |
-| Upload | `dist/neon-drop-itch.zip` |
-| Thumbnail | `dist/art/512x512-square.png` |
+| Upload | `dist/neon-drop-gd.zip` (the id-injected build — **not** the itch zip) |
+| Thumbnails | **three required**: `dist/art/512x512-square.png`, `dist/art/512x384-gd.png`, `dist/art/200x120-gd.png` |
 | Exclusivity | ✅ **NON-EXCLUSIVE** (§2.1) — "worldwide, royalty-free, non-exclusive license" |
 | Termination | **30 days' notice, either party** (§7.1). Accrued revenue is **not forfeited** |
 | SDK | ⚠️ **MANDATORY** (§2.6.3) — failure to integrate ⇒ **publishing request denied** |
 | Governing law | Netherlands / Amsterdam courts (§9.14) |
+
+#### Submission requirements — re-verified against live sources 2026-09-30
+
+Source: `static.gamedistribution.com/developer/developers-guidelines.html`. An earlier version of
+this file quoted the marketing page instead and got several things wrong; corrected below.
+
+| Requirement | Detail |
+|---|---|
+| **Description** | **200–500 characters, hard limit.** The long description elsewhere is ~1,800 — it would have been rejected. New copy: **414** chars. |
+| **Instructions** | **200–500 characters, hard limit.** Previous answer was ~140. New copy: **361** chars. |
+| Genres / tags | **1–2 genres**, **1–5 tags** |
+| Thumbnails | **all three**: 512×512, 512×384, 200×120 |
+| Age groups | **mandatory** to select |
+| Language | English (or `No-Text`) |
+| **Rewarded-ads flag** | ⚠️ **must be ticked** or "your game is unable to request rewarded ads" — a dashboard control, not a text field |
+| Not fields on this form | orientation, price, screenshots, "account required", website, privacy URL |
+| Review | initial assessment **up to one week**; SDK activation approval **up to two weeks** |
+| Debug | `gdsdk.openConsole()` in the browser console |
+
+**Ad rules they enforce:** pre-roll **and** mid-roll both **mandatory**; ads only on user input and
+outside gameplay; game paused **and muted** during ads; reward granted **only** on
+`SDK_REWARDED_WATCH_COMPLETE`.
+
+**Prohibited:** *any* data collection from the game — no Google Analytics, Facebook Pixel,
+DoubleClick, Mixpanel, Adobe Analytics or Flurry. No external hosting (except real multiplayer).
+No outgoing social/ad/e-commerce/affiliate links. No login requirement.
+
+**Layout:** GD recommends an 800×600 iframe; the portrait board was verified to fit without
+clipping at 800×600, 640×480, 1024×768 and 520×1030 (`.verify/verify-iframe-fit.mjs`, 20/20).
+
 
 #### Clauses verified against the real agreement — 2026-09-30
 

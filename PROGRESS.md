@@ -19,7 +19,7 @@
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
 | 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 47/47 functional (was 42; the ad + consent checks were added in Phase 3). All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed in Phase 1. Commit `a1b2ad6`. |
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
-| 3 | **Connect the money** — portals + ad networks | 🟡 **A + H + payout done, B–G/I not started** | ✅ **itch.io LIVE** 12/12 · ✅ **Adsterra LIVE** serving real creatives, consent-gated · ✅ **payout attached** (WebMoney/WMZ, $5). ⬜ 7 platform accounts remain. |
+| 3 | **Connect the money** — portals + ad networks | 🟡 **A + H + payout done; B built and verified, awaiting the game id; C–G/I not started** | ✅ **itch.io LIVE** 14/14 · ✅ **Adsterra LIVE** serving real creatives, consent-gated · ✅ **payout attached** (WebMoney/WMZ, $5) · 🟡 **GameDistribution**: clauses shown, SDK + pre-roll + mid-roll integrated, isolation 10/10, rewarded gate 8/8 — blocked only on the game id. ⬜ 6 platform accounts remain. |
 | 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70% — now the binding constraint** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted (**not posted**) · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
 | 5 | **Handover** — docs + evidence | ✅ **DONE** | ✅ `LAUNCH_REPORT.md` · ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `PROGRESS.md` · ✅ `/evidence` screenshots incl. `evidence/ads/` |
 
@@ -784,6 +784,53 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   command). Committed `78b81d9`.
 - **Lesson recorded for future sessions:** a build tool that writes to a canonical output path
   must let tests redirect it. Otherwise "run the tests" silently becomes "ship the test fixture".
+
+### 2026-09-30 — Angelo: "most of your instructions and guide are outdated" — he was right
+
+He was. I re-read GameDistribution's **live** sources rather than my notes, and the submission
+guidance in `PORTAL_SUBMISSION_KIT.md` was materially wrong. Corrections, all now verified:
+
+- **The Description field has a hard 200–500 character limit.** I had told him to paste the ~1,800
+  character long description. It would have been rejected. Same limit on **Instructions**, where I
+  had supplied ~140 characters — also outside the range. New copy written and counted: description
+  **414** chars, instructions **361** chars.
+- **Three thumbnail sizes are required: 512×512, 512×384 and 200×120.** I had supplied one. The two
+  missing ones now exist. Worse, the old inline recipe hardcoded `x=0` for every crop — `cover.png`
+  is centred art, so the left-edge crop sliced the right-hand tile cluster out of frame. Replaced
+  with `tools/make-portal-thumbs.py` (centred crops), verified by eye at all three GD sizes.
+- **Fields I listed that do not exist:** orientation, price, screenshots, "account required",
+  website, privacy-policy URL. Genres are capped at **2**, tags at **5**, and **age groups are
+  mandatory** — none of which I had mentioned.
+- **A control I never told him about: the rewarded-ads flag.** GD's wiki is explicit — leave it
+  unticked and the game "is unable to request rewarded ads". Neon Drop's two rewarded buttons would
+  have silently done nothing on the GD build.
+- **`49258a0e497c42b5b5d87887f24d27a6` — correcting my own earlier claim.** Last session I said that
+  string was "my own test fixture". It is not: it is **GD's own example gameId, printed verbatim in
+  their SDK-Implementation wiki**. The conclusion stands (it is not *our* id, so a bundle carrying it
+  fails activation), but the provenance I gave was wrong and is corrected here.
+- **Rewarded-ad defect found and fixed in `game/monetize.js`.** The adapter resolved `true` whenever
+  `gdsdk.showAd('rewarded')` resolved. That promise also settles when the player **closes the ad
+  early**, so a skipped ad paid out the reward — a breach of GD's completed-impression rule and
+  squarely inside their invalid-traffic clawback clauses. Now gated on `SDK_REWARDED_WATCH_COMPLETE`
+  only; errors and early closes resolve `false`; a 4 s grace window covers a late event; a 120 s
+  backstop means the button can never hang. New `.verify/verify-rewarded.mjs` — **8/8**, and the
+  test has teeth by construction: scenarios A and B are identical except for the event, yet return
+  different results.
+- **Layout risk checked and cleared.** GD recommends an 800×600 iframe and the game is portrait.
+  New `.verify/verify-iframe-fit.mjs` — **20/20** at 800×600, 640×480, 1024×768, 520×1030; the board
+  adapts with no clipping and stays playable. Screenshots in `.verify/out-iframe/`.
+- **Ad-placement rules confirmed to match our build:** pre-roll **and** mid-roll are both mandatory
+  (we have both), ads only on user input, outside gameplay, paused and muted.
+- **Compliance note:** GD prohibits **any** data collection from the game — no Google Analytics,
+  Facebook Pixel, DoubleClick, Mixpanel, Adobe, Flurry. Another reason the GD build must stay
+  isolated from the Adsterra site loader.
+- **Activation re-confirmed:** upload → open in their iframe from the upload view → watch one full
+  pre-roll until `CONTENT_RESUME_REQUESTED` → integration approved, **up to two weeks**. Initial
+  review is **up to one week**. Debug with `gdsdk.openConsole()`.
+- **`PORTAL_SUBMISSION_KIT.md` now carries a per-section verification status**, so an unverified
+  section can never again be mistaken for a checked one. Only GD is verified; A/C/D/E/F/G/H are
+  explicitly marked as assumed.
+- **Still blocked on the same single value:** the GD game id. Nothing else in Phase 3B is open.
 
 ---
 

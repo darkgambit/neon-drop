@@ -8,6 +8,27 @@
 > clause and termination clause must be pasted into the chat and explicitly approved.
 > Status of that review is tracked in `MONETIZATION_STATUS.md`.
 
+## Verification status — read this before trusting a section
+
+This file previously mixed **verified** facts with **assumed** ones, and the GD section was wrong
+as a result (it quoted marketing copy instead of the submission requirements). Each section now
+carries its own status. Do not treat an unverified row as fact — re-check it against the live docs
+at that platform's handshake.
+
+| Section | Status | Source of truth |
+|---|---|---|
+| **B) GameDistribution** | ✅ **verified 2026-09-30** | developers-guidelines.html + GD-HTML5 wiki (URLs in the section) |
+| A) itch.io | 🟡 **working** — confirmed by a live submission, but the field list was never re-checked against docs | the live listing |
+| C) CrazyGames | ⬜ **assumed** — not yet verified | re-check at handshake |
+| D) Playgama | ⬜ **assumed** — not yet verified | re-check at handshake |
+| E) Poki | ⬜ **assumed** — not yet verified | re-check at handshake |
+| F) AdSense | ⬜ **assumed** — not yet verified | re-check at handshake |
+| G/H) Ko-fi, long tail | ⬜ **assumed** — not yet verified | re-check at handshake |
+
+The three rules that have held up across every platform checked so far: **read the clauses before
+accepting**, **check whether the form has a hard character limit**, and **check the thumbnail
+sizes** — those two bite more often than anything else.
+
 ---
 
 ## The game — facts to reuse everywhere
@@ -169,6 +190,16 @@ for name, tw, th, fy in [('512x512-square.png',512,512,.42),
 
 ### B) GameDistribution — 33% of net revenue, €100 threshold
 
+> **Re-verified 2026-09-30 against the live sources** (the earlier version of this section was
+> wrong — it quoted the marketing page, not the submission requirements):
+> - Requirements: <https://static.gamedistribution.com/developer/developers-guidelines.html>
+> - SDK: <https://github.com/GameDistribution/GD-HTML5/wiki/SDK-Implementation>
+> - Rewarded: <https://github.com/GameDistribution/GD-HTML5/wiki/Rewarded-Ads>
+>
+> **The single most important correction: the Description and Instructions fields each have a
+> HARD 200–500 character limit.** The long description used elsewhere in this kit is ~1,800
+> characters and would have been rejected. The portal-legal copy is in the block below.
+
 **Order matters — this is the trap.** The GD game id does not exist until the game entry does, and
 the SDK snippet is only issued with the entry. So:
 
@@ -176,7 +207,7 @@ the SDK snippet is only issued with the entry. So:
 1. create the game entry (fields below)      -> GD issues the GAME ID
 2. python tools/make-itch-zip.py --gd-id <GAME_ID>
 3. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)
-4. open the game in GD's preview iframe and watch one full pre-roll  -> activation
+4. open the game in GD's preview iframe and watch one full pre-roll  -> integration activated
 ```
 
 If step 1's form demands a zip before it will show you an id, upload `dist/neon-drop-itch.zip` as a
@@ -184,21 +215,88 @@ placeholder to create the entry, copy the id, then **replace** it with the GD bu
 without the id is not the finished article — GD denies publishing when the SDK is not integrated
 (§2.6.3).
 
-| Field | Value |
-|---|---|
-| Upload | `dist/neon-drop-gd.zip` — `index.html` at root. (Placeholder only if the form needs a file to issue the id: `dist/neon-drop-itch.zip`.) |
-| Title | Neon Drop |
-| Description | the **long description** at the top of this file, verbatim |
-| Short description | the **~150-char** description at the top of this file |
-| Category | Puzzle |
-| Tags | `merge, puzzle, casual, html5` |
-| Thumbnail | `dist/art/512x512-square.png` |
-| Orientation | Portrait |
-| Controls | the standard "How do you control the game?" answer |
-| Mobile | the standard "Does it work on mobile?" answer |
-| Account / data | the standard "Does it require an account or collect data?" answer |
-| Exclusive? | **No** — the standard non-exclusive answer |
-| **After approval** | copy the **Game ID** into `gdGameId` in `game/monetize.js`, re-zip, re-upload, confirm the rewarded button fires a real ad in their preview |
+#### Fields — with the limits that actually apply
+
+| Field | Value | Limit |
+|---|---|---|
+| Upload | `dist/neon-drop-gd.zip` — `index.html` at root | zipped, `index.html` flat at the root |
+| Title | `Neon Drop` | must be distinct; no copyrighted names |
+| **Description** | the 414-char copy below | **200–500 chars, hard** |
+| **Instructions** | the 361-char copy below | **200–500 chars, hard** |
+| Genres | `Puzzle` | **min 1, max 2** |
+| Tags | `merge, puzzle, casual, drop, cascade` | **min 1, max 5** |
+| Thumbnails | `dist/art/512x512-square.png` **and** `dist/art/512x384-gd.png` **and** `dist/art/200x120-gd.png` | **all three required**: 512×512, 512×384, 200×120 |
+| Age groups | select all-ages / general audience | **mandatory** |
+| Language | `English` (or `No-Text`) | default should be English |
+| **Rewarded ads** | **tick the rewarded-ads flag** | **not a text field — see below** |
+| Backlinks | none needed | store links go in the Backlinks tab |
+
+**Not fields on this form** (the earlier version wrongly listed them): orientation, price,
+screenshots, "account required", website, privacy-policy URL. Don't go looking for them.
+
+#### ⚠️ The rewarded-ads checkbox — easy to miss, breaks a feature
+
+GD's own rewarded-ads wiki says it outright:
+
+> "**DO NOT FORGET TO CHECK REWARDED ADS FLAG** on developer.gamedistribution.com for your game.
+> Otherwise, your game is unable to request rewarded ads."
+
+Neon Drop has two rewarded buttons (Revive, and the coin reward). Leave that flag unticked and they
+silently do nothing on the GD build. It is a separate control from the text fields.
+
+#### The 414-char description (paste exactly)
+
+```
+Neon Drop is a free browser merge puzzle. Aim a glowing tile at any of five columns, let it fall, and fuse matching numbers into one tile of double the value. After every merge the board settles again, so one drop can trigger a five-link cascade with a climbing combo multiplier. Patience beats speed: four separate merges score 75, but chained in one drop they score 109. No download, no account, works on mobile.
+```
+
+#### The 361-char instructions (paste exactly)
+
+```
+Mouse: move the pointer across the board to choose a column, then click to drop the tile. Touch: drag to aim, then tap to drop. Keyboard: use the left and right arrow keys to aim, then press Space to drop. Tiles that touch and match merge into one tile of double the value. Chain several merges in a single drop to build a combo multiplier and score far higher.
+```
+
+Regenerate all thumbnail sizes in one go (fixes the old left-edge crop, which cut the right-hand
+tiles out of frame):
+
+```bash
+python tools/make-portal-thumbs.py
+```
+
+#### Ad rules GD enforces at review
+
+- **Pre-roll mandatory** — on the Play button. ✅ `preRollThenStart()`.
+- **Mid-roll mandatory** — on non-gameplay buttons; best practice is every button on the
+  Game Over / Win screen. ✅ `gameOver()`.
+- Ads **only on user input**, **outside gameplay**, game **paused and muted**. ✅ no audio exists.
+- Reward **only** on `SDK_REWARDED_WATCH_COMPLETE` — never on the `showAd()` promise, never in the
+  `catch`. ✅ enforced by `gdRewarded()` and proved by `.verify/verify-rewarded.mjs`.
+
+#### What is prohibited on their platform
+
+- **Any data collection from the game is strictly prohibited.** No Google Analytics, Facebook
+  Pixel, DoubleClick, Mixpanel, Adobe Analytics, Flurry. This is another reason the GD build must
+  stay isolated from the Adsterra site loader.
+- No external hosting (except real multiplayer) — GD hosts the game.
+- No outgoing links: social, ads, e-commerce, surveys, affiliate.
+- No login requirement, no political/religious/sexual/discriminatory content, no excessive violence.
+
+#### Activation and review timing
+
+- Initial review: **up to one week**.
+- SDK activation is a **manual step you perform**: after upload, open the game in their iframe from
+  the upload view and **watch one full pre-roll** until `CONTENT_RESUME_REQUESTED` fires. A demo
+  VAST tag (99% fill) is pre-enabled, so you click their `showBanner` button in the debug bar.
+  Disable ad blockers first. Approval of the integration **can take up to two weeks**.
+- Debug any time with `gdsdk.openConsole()` in the browser console.
+
+#### Layout check (done — no action needed)
+
+GD recommends an **800×600** iframe and Neon Drop is portrait, so this was a real clipping risk.
+Verified in a browser: the board fits with no clipping at 800×600 (CELL≈54px), 640×480, 1024×768
+and 520×1030 — `.verify/verify-iframe-fit.mjs`, **20/20**, screenshots in `.verify/out-iframe/`.
+The board simply centres in the wider frame.
+
 
 ### C) CrazyGames — developer.crazygames.com, €100 minimum
 | Field | Value |
@@ -257,7 +355,9 @@ Y8 · GameMonetize · Newgrounds · Armor Games · freegames.io
 
 **"Does it work on mobile?"**
 > Yes. Portrait-first, one-handed. The board scales to the viewport and every column is a
-> full-height touch target. Tested at 360×640, 414×896, 768×1024 and 1440×900.
+> full-height touch target. Verified in a browser at 360×640, 414×896, 768×1024, 1440×900,
+> and in landscape portal frames at 800×600, 640×480 and 1024×768 — the board adapts with no
+> clipping in any of them.
 
 **"Does it require an account or collect data?"**
 > No account, no login, no personal data collected by the game. Best score and coins are

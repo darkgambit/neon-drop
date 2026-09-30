@@ -36,6 +36,16 @@
   var _detected = 'none';
   var _ready = false;
 
+  /* GameDistribution rewarded state.
+     GD is explicit: the reward may ONLY be granted when the
+     SDK_REWARDED_WATCH_COMPLETE event fires. A resolved showAd() promise is
+     NOT proof of a completed view — it also settles when the player closes the
+     ad early. Granting on the promise would pay out for an unwatched ad, which
+     breaches GD's "reward only on a completed impression" rule and is exactly
+     the pattern their invalid-traffic clawback clauses target. */
+  var _rewardComplete = false;
+  var _rewardWaiter = null;
+
   function log() {
     if (AD_CONFIG.debug) console.log.apply(console, ['[Ads]'].concat([].slice.call(arguments)));
   }
@@ -60,6 +70,10 @@
           if (e.name === 'SDK_GAME_PAUSE') global.dispatchEvent(new Event('ads:pause'));
           if (e.name === 'SDK_GAME_START') global.dispatchEvent(new Event('ads:resume'));
           if (e.name === 'SDK_READY') resolve(true);
+          if (e.name === 'SDK_REWARDED_WATCH_COMPLETE') {
+            _rewardComplete = true;
+            if (_rewardWaiter) _rewardWaiter();
+          }
         }
       };
       var s = document.createElement('script');
@@ -68,6 +82,41 @@
       s.onerror = function () { resolve(false); };
       document.head.appendChild(s);
       setTimeout(function () { resolve(!!global.gdsdk); }, 6000);
+    });
+  }
+
+  /* ---------------- GameDistribution rewarded -------------------- */
+  /* Resolves TRUE only on SDK_REWARDED_WATCH_COMPLETE. Everything else — an
+     SDK error, a rejected promise, or the player closing the ad early —
+     resolves FALSE. The timeout exists so a broken SDK can never hang the
+     revive button; it always resolves, it just resolves honestly. */
+  function gdRewarded() {
+    _rewardComplete = false;
+    return new Promise(function (resolve) {
+      var settled = false;
+      function finish(v) {
+        if (settled) return;
+        settled = true;
+        _rewardWaiter = null;
+        resolve(v);
+      }
+      _rewardWaiter = function () { finish(true); };
+
+      var show = function () { return global.gdsdk.showAd('rewarded'); };
+      var pre = (typeof global.gdsdk.preloadAd === 'function')
+        ? global.gdsdk.preloadAd('rewarded')
+        : Promise.resolve();
+
+      pre.then(show).then(function () {
+        // The ad flow ended. The completion event normally arrives before the
+        // promise settles, but allow a short grace window for it to land late.
+        setTimeout(function () { finish(_rewardComplete); }, 4000);
+      }, function () {
+        finish(false);   // error -> never reward
+      });
+
+      // Absolute backstop: never leave the player staring at a dead button.
+      setTimeout(function () { finish(_rewardComplete); }, 120000);
     });
   }
 
@@ -132,9 +181,7 @@
       try {
         switch (_detected) {
           case 'gamedistribution':
-            if (global.gdsdk) return global.gdsdk.preloadAd('rewarded')
-              .then(function () { return global.gdsdk.showAd('rewarded'); })
-              .then(function () { return resume(true); }, function () { return resume(false); });
+            if (global.gdsdk) return gdRewarded().then(function (ok) { return resume(ok); });
             break;
           case 'crazygames':
             return new Promise(function (res) {

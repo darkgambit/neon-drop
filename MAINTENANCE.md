@@ -109,11 +109,14 @@ Kill the local server before deploying. Starting it from the repo root and point
 | `node .verify/shot-ads-evidence.mjs <baseUrl>` | writes `evidence/ads/` — request log + screenshots of each rendered unit |
 | `node .verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `node .verify/verify-itch.mjs` | drives the real itch.io store page, plays the embed, and reads the rendered frame for dev artefacts (14 checks) |
-| `node .verify/verify-gd-build.mjs [gameId]` | rebuilds both portal bundles and proves they are isolated — itch stays `none` with 0 SDK requests, GD loads the SDK (10 checks) |
+| `node .verify/verify-gd-build.mjs [gameId]` | rebuilds both portal bundles and proves they are isolated — itch stays `none` with 0 SDK requests, GD loads the SDK (10 checks). Builds into a temp dir; `dist/` is never touched. |
+| `node .verify/verify-rewarded.mjs` | proves the reward needs a **completed** view — the completion event gives `true`, an early close gives `false` (8 checks) |
+| `node .verify/verify-iframe-fit.mjs` | portrait board in landscape portal frames — no clipping, still playable at 800×600, 640×480, 1024×768, 520×1030 (20 checks) |
 | `node .verify/lighthouse.mjs <baseUrl>` | perf/a11y/best-practices/SEO gate |
 | `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |
 | `node tools/shot-portal.mjs [url] [outDir]` | 3 store screenshots at 1040×2060, seeded and reproducible |
+| `python tools/make-portal-thumbs.py` | every portal thumbnail size from `cover.png`, centre-cropped (needs Pillow) |
 | `node tools/build-site.mjs` | stage `_site/` from the allowlist; refuses to stage a forbidden file |
 
 **Serve the staged build, not the repo root.** `_site` is what actually deploys, so testing the
