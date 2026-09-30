@@ -94,6 +94,26 @@ screenshots are the part that matters.
 Approved but deliberately unused: **160×600** and **160×300** — they need a sidebar this layout
 does not have, and stacking every approved size on one page is both slow and hostile.
 
+**Both breakpoints verified, not just the wide one.** The narrow viewport swaps in a *different
+unit* (320×50, its own key), so desktop success says nothing about it. Measured separately:
+
+```
+--- MOBILE 390x844 ---
+adRequests=2  mobile 320x50 unit used=true  overflow=false
+  200  49630B  .../09e826ea0472cd384211a90e23a11fea/invoke.js    <- the 320x50 key
+  200  49610B  .../743702bbd12151692c0084aff88afb14/invoke.js    <- the 300x250 rect
+frames: 320x50 "Advertisement" · 300x250 "Advertisement"
+```
+
+`mobile-slot-1.png` shows a real creative filling the full 320×50. Confirming the request fired
+would have been the weaker claim — a unit can request, return 200, and still be blank.
+
+**`ads.txt` carries no Adsterra record, deliberately.** Adsterra's own publisher documentation
+does not state an `ads.txt` requirement for the banner/iframe format, and publishing a guessed
+seller line would misdeclare who may sell this inventory — worse than an empty file. The file
+stays AdSense-only and inactive. **Confirm with Adsterra support before adding anything**; do not
+invent a line to fill the gap.
+
 ### The consent gate is real, and asserted in both directions
 
 `privacy.html` claimed a consent banner existed. It did not. Rather than weaken the policy to
@@ -125,19 +145,32 @@ not fixable**. Recorded rather than hidden.
 
 ### Payout — ⬜ the one remaining blocker
 
+| Method | Minimum | Region constraint |
+|---|---|---|
+| **Paxum** | **$5** | none |
+| **Crypto / USDT (Tether)** | **$5** | none |
+| PayPal | $25 | account must be supported in your region |
+| Local Bank Transfer (Hyperwallet) | $50 | 45+ local currencies |
+| Wire transfer | $1,000 | — |
+
+Schedule: **NET-15, paid biweekly.**
+
 | | |
 |---|---|
-| Network | Adsterra |
-| Minimum payout | **$5** |
-| Methods | **USDT / Paxum** — no bank-region constraint |
 | Attached? | ❌ **No.** The account has no payout method, so revenue accrues but cannot be withdrawn. |
 
-**Why this network and not AdSense first:** AdSense pays by bank transfer to a supported region;
-Angelo's bank is in the Philippines and he is temporarily in Libya. Adsterra's $5 minimum and
-crypto payout remove that constraint entirely — it is the network that can actually pay him.
+**Recommended: Paxum, or a USDT wallet — both at $5.** Paxum and crypto carry no bank-region
+constraint, which is the whole reason Adsterra was chosen ahead of AdSense: AdSense pays by bank
+transfer to a supported region, Angelo's bank is in the Philippines, and he is temporarily in
+Libya. A $5 floor also means the first payout arrives after trivial traffic rather than after a
+$100 threshold.
 
-**Next action for Angelo:** open the Adsterra dashboard → *Payment settings* → add a **Paxum**
-account or a **USDT** wallet address. That is the last step between "ads serve" and "money arrives".
+**Second option worth knowing:** Local Bank Transfer via Hyperwallet covers 45+ currencies at a
+$50 minimum, which may reach a Philippine bank directly if a local-currency payout is preferred
+over crypto. Verify eligibility in the dashboard before relying on it.
+
+**Next action for Angelo:** Adsterra dashboard → *Payment settings* → add **Paxum** or a **USDT**
+wallet in your own name. That is the last step between "ads serve" and "money arrives".
 
 ---
 

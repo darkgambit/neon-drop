@@ -127,6 +127,63 @@ report.blog = {
 };
 await page.screenshot({ path: path.join(OUT, '03-blog-with-ads.png'), fullPage: true });
 
+/* ---- 5. MOBILE pass: the 320x50 unit is a DIFFERENT key --------------
+   The desktop pass proves the 728x90 and 300x250 keys fill. The narrow
+   viewport swaps in a different unit (320x50, its own key), so desktop
+   success says nothing about it. "It requested" is not "it filled" — the
+   exact trap this script exists to avoid. Verify it separately. */
+const mctx = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  userAgent: REAL_UA,
+  isMobile: true,
+  hasTouch: true,
+  deviceScaleFactor: 2,
+});
+const mpage = await mctx.newPage();
+const mRequests = [];
+const mResponses = [];
+mpage.on('request', (r) => { if (AD_HOST.test(r.url())) mRequests.push(r.url()); });
+mpage.on('response', async (r) => {
+  if (!AD_HOST.test(r.url())) return;
+  let len = null;
+  try { len = (await r.body()).length; } catch (e) {}
+  mResponses.push({ url: r.url(), status: r.status(), bytes: len });
+});
+await mpage.goto(`${BASE}/`, { waitUntil: 'load' });
+await mpage.evaluate(() => { try { localStorage.setItem('nd_ad_consent', 'granted'); } catch (e) {} });
+await mpage.goto(`${BASE}/`, { waitUntil: 'load' });
+await mpage.waitForTimeout(5000);
+
+const mFrames = await mpage.evaluate(() =>
+  Array.from(document.querySelectorAll('.adslot iframe')).map((f) => {
+    const r = f.getBoundingClientRect();
+    return { title: f.getAttribute('title'), w: Math.round(r.width), h: Math.round(r.height) };
+  })
+);
+// Which KEYS were requested — this is what tells us the narrow unit fired.
+const mKeys = mRequests.map((u) => u.split('/').slice(-2)[0]);
+report.mobile = {
+  adRequests: mRequests.length,
+  keys: mKeys,
+  usedMobileUnit: mKeys.includes('09e826ea0472cd384211a90e23a11fea'),
+  iframes: mFrames,
+  responses: mResponses,
+  overflowsViewport: mFrames.some((f) => f.w > 390),
+};
+const mslots = await mpage.locator('.adslot').count();
+for (let i = 0; i < mslots; i++) {
+  const el = mpage.locator('.adslot').nth(i);
+  try {
+    await el.scrollIntoViewIfNeeded();
+    await mpage.waitForTimeout(900);
+    await el.screenshot({ path: path.join(OUT, `mobile-slot-${i + 1}.png`) });
+  } catch (e) {}
+}
+await mpage.evaluate(() => window.scrollTo(0, 0));
+await mpage.waitForTimeout(400);
+await mpage.screenshot({ path: path.join(OUT, '04-mobile-with-ads.png') });
+await mctx.close();
+
 await browser.close();
 
 fs.writeFileSync(path.join(OUT, 'ad-evidence.json'), JSON.stringify(report, null, 2));
@@ -141,11 +198,25 @@ console.log('with consent: adRequests=' + report.withConsent.adRequests +
 for (const r of responses) {
   console.log(`  ${r.status}  ${r.bytes === null ? '?' : r.bytes + 'B'}  ${r.url.slice(0, 110)}`);
 }
-console.log('\nrendered frames:');
+console.log('\nrendered frames (desktop):');
 for (const f of frames) console.log(`  ${f.w}x${f.h}  title="${f.title}"  ${f.src.slice(0, 80)}`);
-console.log('\nconsole errors: ' + (consoleErrors.length ? consoleErrors.join(' | ') : 'none'));
-console.log('written to evidence/ads/ad-evidence.json + ' + (slots + 3) + ' screenshots\n');
 
-const ok = report.noConsent.adRequests === 0 && report.withConsent.adRequests > 0 && frames.length > 0;
-console.log(ok ? 'VERDICT: PASS — gate holds, ads fire after consent.' : 'VERDICT: FAIL — see above.');
+console.log('\n--- MOBILE 390x844 ---');
+console.log('adRequests=' + report.mobile.adRequests +
+            '  mobile 320x50 unit used=' + report.mobile.usedMobileUnit +
+            '  overflow=' + report.mobile.overflowsViewport);
+for (const r of mResponses) {
+  console.log(`  ${r.status}  ${r.bytes === null ? '?' : r.bytes + 'B'}  ${r.url.slice(0, 110)}`);
+}
+console.log('frames:');
+for (const f of mFrames) console.log(`  ${f.w}x${f.h}  title="${f.title}"`);
+
+console.log('\nconsole errors: ' + (consoleErrors.length ? consoleErrors.join(' | ') : 'none'));
+console.log('written to evidence/ads/ad-evidence.json + ' + (slots + mslots + 4) + ' screenshots\n');
+
+const ok =
+  report.noConsent.adRequests === 0 &&
+  report.withConsent.adRequests > 0 && frames.length > 0 &&
+  report.mobile.adRequests > 0 && mFrames.length > 0 && !report.mobile.overflowsViewport;
+console.log(ok ? 'VERDICT: PASS — gate holds; ads fill on desktop AND mobile.' : 'VERDICT: FAIL — see above.');
 process.exit(ok ? 0 : 1);

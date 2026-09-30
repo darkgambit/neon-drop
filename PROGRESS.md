@@ -181,9 +181,17 @@ The first run reported it as a failure. Fixed by attributing failed requests to 
 issued them** — `itch.zone` is ours, `itch.io` is their shell. Same product-vs-harness split as
 the Netlify badge earlier: a check that fails for reasons outside the product is a broken check.
 
-**Open item — the live listing is one revision behind.** It was uploaded before the `#netTag` fix
-below, so it still paints `ad network: none` at the foot of the board. The rebuilt zip fixes it;
-it needs a re-upload.
+**Open item — the live listing is one revision behind, and the fix is staged and ready.** The
+listing was uploaded before the `#netTag` fix below, so it still paints `ad network: none` at the
+foot of the board. **Verified:** `dist/neon-drop-itch.zip` (rebuilt 2026-09-30) already contains
+the gated version — extracted and read back:
+
+```js
+tag.textContent = (window.Ads && Ads.debug) ? ('ad network: ' + Ads.network) : '';
+```
+
+So the re-upload is a straight file swap with no rebuild needed. It needs Angelo's sign-in;
+queued as a handshake.
 
 ### B. Adsterra — 🟢 LIVE, serving, behind a consent gate
 
@@ -220,6 +228,24 @@ VERDICT: PASS — gate holds, ads fire after consent.
 
 `evidence/ads/slot-1.png` and `slot-2.png` show **real paid creatives**, not blank frames —
 which is the difference between "the tag is on the page" and "the network is filling it".
+
+**Both breakpoints verified separately.** The narrow viewport swaps in a *different unit*
+(320×50, its own key), so desktop success says nothing about mobile. Measured:
+
+```
+--- MOBILE 390x844 ---
+adRequests=2  mobile 320x50 unit used=true  overflow=false
+  200  49630B  .../09e826ea0472cd384211a90e23a11fea/invoke.js   <- the 320x50 key
+  200  49610B  .../743702bbd12151692c0084aff88afb14/invoke.js   <- the 300x250 rect
+frames: 320x50 · 300x250
+```
+
+`evidence/ads/mobile-slot-1.png` shows the creative filling the full 320×50. Confirming the
+request fired would have been the weaker claim — a unit can request, return 200, and be blank.
+
+**`ads.txt` gets no Adsterra record.** Their publisher docs do not state an `ads.txt` requirement
+for the banner format, and inventing a seller line misdeclares who may sell the inventory — worse
+than an empty file. Stays AdSense-only and inactive. Confirm with Adsterra support first.
 
 **The consent gate is real, and it is asserted in both directions.** `privacy.html` claimed a
 consent banner existed; it did not. Rather than soften the policy to match the code, `consent.js`
@@ -485,22 +511,32 @@ tile values deterministic. **No game code was modified to make it testable.**
 
 ## Blocked / open questions
 
-1. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
+1. **🔴 Adsterra payout method — the highest-value open item.** Ads serve and impressions accrue,
+   but the account has no payout method, so **nothing can be withdrawn**. Handshake #3 was issued
+   and **deferred by Angelo** ("continue"), not skipped. Recommended: Paxum or a USDT wallet, both
+   at a $5 minimum. Two minutes in the Adsterra dashboard.
+2. **itch.io re-upload** — the live listing predates the `#netTag` fix. The corrected zip is
+   staged and verified; this is a straight file swap needing a sign-in. Handshake queued.
+3. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
    verification token. Netlify gives us no DNS control (the site is on a `netlify.app` subdomain),
    so DNS verification is not available; the **HTML-tag method** is the path. Handshake #2 was
    issued and **deferred, not skipped**.
-2. **Every Phase 3 platform** needs its own sign-in handshake. Nothing can be submitted without an
-   account, so this is the single biggest remaining dependency. See `MONETIZATION_STATUS.md`.
-3. **Analytics** needs a Cloudflare Web Analytics or Umami account.
-4. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
+4. **Every remaining Phase 3 platform** needs its own sign-in handshake — GameDistribution,
+   CrazyGames, Playgama, Poki, AdSense, Ko-fi, and the long tail. Nothing can be submitted without
+   an account, so this is the single biggest remaining dependency. See `MONETIZATION_STATUS.md`.
+5. **Analytics** needs a Cloudflare Web Analytics or Umami account.
+6. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
    public contact `kingripper9@gmail.com`, Philippines, crypto-preferred payout.
    ⚠️ The contact address is now **published** on `contact.html` — say the word and I will swap it.
-5. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
+7. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
    default. That is *consistent* with `terms.html` (personal licence to play only; embedding needs a
    licence) — but it is a business decision, so I have not touched it. Decide whether the source
    stays all-rights-reserved or is open-sourced; portals sometimes ask.
-6. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
+8. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
    for a dedicated address if it becomes noisy.
+9. **`ads.txt` has no Adsterra record, deliberately.** Their publisher docs do not state an
+   `ads.txt` requirement for the banner format. Confirm with Adsterra support before adding a line —
+   a guessed seller record is worse than an empty file.
 
 ---
 
@@ -591,6 +627,18 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
 - **Requirement 3 of the definition of done flipped to MET.** Revenue is still **$0.00** and
   nothing is withdrawable — **no payout method is attached to the Adsterra account.** That is
   now the single highest-value open item.
+- **Closed my own verification gap.** I had confirmed the mobile 320×50 unit *requested*, never
+  that it *filled* — the exact trap I had just written into the skill. It swaps in a **different
+  key** at narrow widths, so desktop success proved nothing. Now measured: 320×50 unit used,
+  HTTP 200, renders at exactly 320×50, no overflow, real creative filling it.
+- **Corrected the payout facts against Adsterra's own docs:** Paxum **$5**, crypto/USDT **$5**,
+  PayPal $25, Local Bank Transfer (Hyperwallet, 45+ currencies) $50, wire $1,000. NET-15 biweekly.
+  LBT is worth knowing — it may reach a Philippine bank without crypto.
+- **`ads.txt` left AdSense-only.** Adsterra's publisher docs do not state an `ads.txt` requirement
+  for the banner format; inventing a seller line would misdeclare the inventory. Needs support
+  confirmation, not a guess.
+- **Confirmed the itch re-upload is ready to go** — the staged `dist/neon-drop-itch.zip` already
+  contains the gated `#netTag` (extracted and read back), so it is a straight file swap.
 
 ---
 
