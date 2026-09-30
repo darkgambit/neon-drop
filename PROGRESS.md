@@ -32,7 +32,7 @@ Checked 2026-09-30. **Four of six hard requirements are met.**
 | # | Requirement | State | Evidence |
 |---|---|---|---|
 | 1 | Live URL over HTTPS, playable mobile + desktop, zero console errors | ✅ **MET** | 47/47 checks against production; HSTS, http→https 301 |
-| 2 | Game LIVE and publicly playable on ≥1 portal | ✅ **MET** | https://kdbdeocampo.itch.io/neon-drop — 12/12 via `.verify/verify-itch.mjs` |
+| 2 | Game LIVE and publicly playable on ≥1 portal | ✅ **MET** | https://kdbdeocampo.itch.io/neon-drop — **14/14** via `.verify/verify-itch.mjs`, debug label confirmed clear |
 | 3 | ≥1 ad network integrated, **verifiably making ad requests** | ✅ **MET** | **Adsterra live.** 2 units per content page, HTTP 200, 728×90 + 300×250 + 320×50 rendered. `evidence/ads/`. Gated on consent: 0 requests before, 2 after. |
 | 4 | Placeholder grep returns nothing | ✅ **MET** | narrow grep exit 1; `tools/check-placeholders.mjs` 0 active |
 | 5 | Payout details attached to accounts in Angelo's name | ✅ **MET** | **WebMoney (WMZ) attached 2026-09-30**, $5 minimum, no bank-region gate. ⚠️ confirm the Payout Information form is *approved*, not just saved. |
@@ -171,20 +171,22 @@ one missed. See "The acceptance gate was too narrow" under Phase 3.
 | Item | Value |
 |---|---|
 | Listing | **https://kdbdeocampo.itch.io/neon-drop** |
-| Published | 2026-09-30 |
+| Published | 2026-09-30 (re-uploaded same day to clear the `#netTag` defect) |
 | Account | `kdbdeocampo` — **not** `darkgambit`. Handles differ across platforms; never build a URL from the GitHub handle. |
-| Embed source | `html-classic.itch.zone/html/19476821/index.html` |
+| Embed source | `html-classic.itch.zone/html/19478707/index.html` — was `19476821` before the re-upload |
 | Upload | `dist/neon-drop-itch.zip` (3 files, flat at root) |
 | Agreement | **None signed.** itch.io is non-exclusive by design. |
 | Revenue | **$0, by design** — the listing is free-to-play. Value is distribution + a canonical link for the marketing posts. |
 
 **Verified by playing it, not by checking the status code.** `.verify/verify-itch.mjs` drives the
-real store page: presses *Run game*, waits for the itch CDN iframe, starts a game, drops six tiles.
+real store page: presses *Run game*, waits for the itch CDN iframe, starts a game, drops six tiles,
+and reads the rendered frame for dev artefacts.
 
 ```
-12/12 checks passed
-  SCORE 0 -> 10   ·  6/6 drops registered  ·  zero console errors
+14/14 checks passed
+  SCORE 0 -> 22   ·  6/6 drops registered  ·  zero console errors
   zero failed requests from the game frame
+  debug network label: empty
 ```
 
 **Harness lesson:** itch's own store shell runs a Google Analytics beacon that aborts on close.
@@ -192,17 +194,18 @@ The first run reported it as a failure. Fixed by attributing failed requests to 
 issued them** — `itch.zone` is ours, `itch.io` is their shell. Same product-vs-harness split as
 the Netlify badge earlier: a check that fails for reasons outside the product is a broken check.
 
-**Open item — the live listing is one revision behind, and the fix is staged and ready.** The
-listing was uploaded before the `#netTag` fix below, so it still paints `ad network: none` at the
-foot of the board. **Verified:** `dist/neon-drop-itch.zip` (rebuilt 2026-09-30) already contains
-the gated version — extracted and read back:
+**✅ Re-uploaded and re-verified 2026-09-30.** The listing once predated the `#netTag` fix and
+painted `ad network: none` at the foot of the board. Angelo re-uploaded; **the new build is
+confirmed live** — the itch CDN embed revision changed from `html/19476821/` to **`html/19478707/`**,
+which is the proof the upload took effect rather than being queued.
 
-```js
-tag.textContent = (window.Ads && Ads.debug) ? ('ad network: ' + Ads.network) : '';
-```
+`.verify/verify-itch.mjs` now **14/14** — the two new checks assert the debug label is empty and
+that no dev artefacts (`ad network:`, `undefined`, `NaN`, `[object Object]`) appear in the rendered
+game frame. Evidence: `evidence/itch-listing-playing-2026-09-30.png`.
 
-So the re-upload is a straight file swap with no rebuild needed. It needs Angelo's sign-in;
-queued as a handshake.
+> **Why the guard lives in this suite now:** the zip being correct is not the same as the upload
+> having taken effect. Asserting on the **rendered live frame** is the only way to tell the
+> difference — the same "rendered ≠ filled" lesson as the ad units.
 
 ### B. Adsterra — 🟢 LIVE, serving, behind a consent gate
 
@@ -535,30 +538,31 @@ tile values deterministic. **No game code was modified to make it testable.**
    attached; revenue is $0.00 purely because there is not yet enough traffic. The three articles
    and ten clips are live. **The launch posts are drafted but unposted** — posting as Angelo is
    not something I will do, so this needs either his go-ahead or a change of plan.
-3. **itch.io re-upload** — the live listing predates the `#netTag` fix. The corrected zip is
-   staged and verified; this is a straight file swap needing a sign-in. Handshake queued.
-4. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
+3. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
    verification token. Netlify gives us no DNS control (the site is on a `netlify.app` subdomain),
    so DNS verification is not available; the **HTML-tag method** is the path. Handshake #2 was
    issued and **deferred, not skipped**.
-5. **Every remaining Phase 3 platform** needs its own sign-in handshake — GameDistribution,
+4. **Every remaining Phase 3 platform** needs its own sign-in handshake — GameDistribution,
    CrazyGames, Playgama, Poki, AdSense, Ko-fi, and the long tail. Nothing can be submitted without
    an account, so this is the single biggest remaining dependency. See `MONETIZATION_STATUS.md`.
-6. **Analytics** needs a Cloudflare Web Analytics or Umami account. This matters more now: with
+5. **Analytics** needs a Cloudflare Web Analytics or Umami account. This matters more now: with
    the money path complete, knowing which pages and referrers bring traffic is the difference
    between guessing and optimising.
-7. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
+6. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
    public contact `kingripper9@gmail.com`, Philippines, crypto-preferred payout.
    ⚠️ The contact address is now **published** on `contact.html` — say the word and I will swap it.
-8. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
+7. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
    default. That is *consistent* with `terms.html` (personal licence to play only; embedding needs a
    licence) — but it is a business decision, so I have not touched it. Decide whether the source
    stays all-rights-reserved or is open-sourced; portals sometimes ask.
-9. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
+8. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
    for a dedicated address if it becomes noisy.
-10. **`ads.txt` has no Adsterra record, deliberately.** Their publisher docs do not state an
-    `ads.txt` requirement for the banner format. Confirm with Adsterra support before adding a line —
-    a guessed seller record is worse than an empty file.
+9. **`ads.txt` has no Adsterra record, deliberately.** Their publisher docs do not state an
+   `ads.txt` requirement for the banner format. Confirm with Adsterra support before adding a line —
+   a guessed seller record is worse than an empty file.
+10. **`butler` (itch.io CLI) is blocked by the sandbox proxy.** `broth.itch.ovh` fails with
+    `CONNECT tunnel failed, 502`, so itch uploads cannot be automated from here. Do not promise an
+    autonomous upload path without probing the download first.
 
 ---
 
@@ -682,6 +686,23 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
 - **The bottleneck has moved from engineering to distribution.** Nothing is broken and nothing is
   missing; revenue is $0.00 because there is not yet enough traffic. The articles and clips are
   live; **the launch posts are drafted but unposted** — that is the highest-value lever left.
+
+### 2026-09-30 — itch.io re-uploaded; the last live defect is closed
+
+- **Angelo re-uploaded the corrected zip.** Verified from the outside rather than trusted: the
+  itch CDN embed revision moved from `html/19476821/` to **`html/19478707/`**, which is the proof
+  the upload took effect rather than sitting in a queue.
+- **`verify-itch.mjs` is now 14/14**, with two new permanent checks: the debug label reads empty
+  in the rendered frame, and no dev artefacts (`ad network:`, `undefined`, `NaN`,
+  `[object Object]`) appear anywhere in the live listing's game text.
+- **The guard belongs there, not only in `verify.mjs`.** A correct zip is not the same as an
+  effective upload — only reading the **rendered live frame** distinguishes them. Same
+  "rendered ≠ filled" principle as the ad units.
+- **Evidence:** `evidence/itch-listing-playing-2026-09-30.png` — score 22, clean board, no label.
+- **Also confirmed:** `butler` cannot be installed from this sandbox (`broth.itch.ovh` →
+  `CONNECT tunnel failed, 502`), so itch uploads cannot be automated here. Recorded so a future
+  session does not promise an autonomous path that cannot work.
+- **No live defects remain.** Every known issue on every public surface is now fixed and verified.
 
 ---
 

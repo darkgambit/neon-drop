@@ -176,6 +176,24 @@ record('Score changed — the game is actually playable', scoreAfter !== null &&
 await sleep(400);
 await page.screenshot({ path: path.join(OUT, 'itch-2-playing.png') });
 
+// ------------------------------------------------------------ dev-label guard
+// The live listing once shipped a debug string ("ad network: none") painted at
+// the foot of the board. This page is the canonical link the marketing posts
+// point at, so the guard lives here permanently — not just in verify.mjs.
+// Asserting on the RENDERED game frame, not on the zip, because the zip being
+// correct is not the same as the upload having taken effect.
+const tagText = String(
+  await gameFrame.locator('#netTag').textContent().catch(() => '')
+).trim();
+record('Debug network label is hidden on the LIVE listing', tagText === '',
+  tagText ? `visible text: "${tagText}"` : 'empty');
+
+const gameBody = await gameFrame.locator('body').innerText().catch(() => '');
+const devLeaks = ['ad network:', 'undefined', 'NaN', '[object Object]']
+  .filter((s) => gameBody.includes(s));
+record('No dev artefacts in the live listing text', devLeaks.length === 0,
+  devLeaks.join(', ') || 'none');
+
 // --------------------------------------------------------------- cleanliness
 const realErrors = consoleErrors.filter((e) => !/favicon/i.test(e));
 record('No console errors', realErrors.length === 0,

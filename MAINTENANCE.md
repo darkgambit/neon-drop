@@ -108,7 +108,7 @@ Kill the local server before deploying. Starting it from the repo root and point
 | `node .verify/verify-ads.mjs <baseUrl>` | consent gate + ad rendering across 4 visitor paths (18 checks) |
 | `node .verify/shot-ads-evidence.mjs <baseUrl>` | writes `evidence/ads/` — request log + screenshots of each rendered unit |
 | `node .verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
-| `node .verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed (12 checks) |
+| `node .verify/verify-itch.mjs` | drives the real itch.io store page, plays the embed, and reads the rendered frame for dev artefacts (14 checks) |
 | `node .verify/lighthouse.mjs <baseUrl>` | perf/a11y/best-practices/SEO gate |
 | `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |

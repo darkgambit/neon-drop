@@ -25,7 +25,7 @@ moved from engineering to distribution.
 | | URL | State |
 |---|---|---|
 | **Site + game** | **https://neon-drop.netlify.app** | 🟢 Live, HTTPS, HSTS, HTTP→HTTPS 301 |
-| **itch.io listing** | **https://kdbdeocampo.itch.io/neon-drop** | 🟢 Live, verified playable (12/12) |
+| **itch.io listing** | **https://kdbdeocampo.itch.io/neon-drop** | 🟢 Live, verified playable (14/14), debug label clear |
 | **GitHub** | https://github.com/darkgambit/neon-drop | 🟢 Public, `main`, 15 commits |
 | **Ads** | same domain, `/` and `/blog/*` | 🟢 Adsterra serving real creatives |
 | **Payout** | Adsterra → WebMoney (WMZ) | 🟢 Attached, $5 minimum, biweekly automatic |
@@ -64,7 +64,7 @@ Every number below came from a script in `.verify/`, run against the live produc
 |---|---|---|
 | `verify.mjs` | **47/47** | Board, drops, merges, cascades, combos, scoring, persistence, Game Over, rewarded revive, reset, touch/mouse/keyboard, 4 viewports, zero console errors, zero first-party 404s, consent gate both directions |
 | `verify-ads.mjs` | **18/18** | Ads across 4 visitor paths: first visit, accepted, declined, game page |
-| `verify-itch.mjs` | **12/12** | The real itch.io store page: presses *Run game*, plays the embed |
+| `verify-itch.mjs` | **14/14** | The real itch.io store page: presses *Run game*, plays the embed, reads the rendered frame for dev artefacts |
 | `shot-ads-evidence.mjs` | **PASS** | Request log + screenshots of the creatives filling each unit, desktop **and** mobile |
 | `lighthouse.mjs` | **All thresholds** | perf ≥90, a11y ≥90, bp ≥90, seo ≥95 on 4 measurements |
 | `check-placeholders.mjs` | **0 ACTIVE** | No placeholder ships |
@@ -184,7 +184,6 @@ Stated plainly so there are no surprises:
 | Blocked item | Needs |
 |---|---|
 | **Traffic / distribution** | 🔴 **The real constraint now.** The launch posts are drafted and ready; they need Angelo to post them, or a decision on how to promote. |
-| itch.io re-upload | Angelo's sign-in. The corrected zip is staged and verified — a file swap. |
 | Search Console + Bing | Angelo's sign-in. HTML-tag method (no DNS control on `netlify.app`). |
 | GameDistribution, CrazyGames, Playgama, Poki, AdSense, Ko-fi, long tail | One sign-in each |
 | Analytics (Cloudflare / Umami) | An account. Matters more now — knowing which pages bring traffic is the difference between guessing and optimising. |

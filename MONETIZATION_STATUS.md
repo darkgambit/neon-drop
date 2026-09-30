@@ -254,22 +254,27 @@ preserved.
 | Cover art | `dist/art/630x500-itch-cover.png`, `dist/art/1280x720-16x9.png` |
 | Review | None — published immediately |
 | Exclusivity | **None.** itch.io is non-exclusive by design. No agreement was signed. |
-| Embed | Served from `html-classic.itch.zone/html/19476821/index.html` |
+| Embed | Served from `html-classic.itch.zone/html/19478707/index.html` (revision `19476821` before the 2026-09-30 re-upload) |
 | Field values | `PORTAL_SUBMISSION_KIT.md` § A |
 
 **Verified playable, not just "page returns 200".** `.verify/verify-itch.mjs` drives the real
 store page in a real browser — presses *Run game*, waits for the itch CDN iframe, starts a game
-and drops six tiles. **12/12 checks pass**, including `SCORE 0 → 10`, zero console errors, and
-zero failed requests from the game frame.
+and drops six tiles. **14/14 checks pass**, including `SCORE 0 → 22`, zero console errors, zero
+failed requests from the game frame, and **no developer artefacts in the rendered frame**.
 
 > The harness deliberately separates **our** failed requests from **itch.io's own page shell**.
 > itch's store page runs a Google Analytics beacon that aborts on close; attributing that to the
 > game would have produced a permanent false failure. Requests are attributed by the frame that
 > issued them (`itch.zone` = ours).
 
-**Open item:** the live listing was uploaded *before* the `#netTag` fix (see below), so it still
-shows the developer label `ad network: none` at the foot of the board. A re-upload of the rebuilt
-zip clears it. Tracked in `PROGRESS.md`.
+**✅ The "one revision behind" defect is CLOSED (2026-09-30).** The listing originally predated
+the `#netTag` fix and painted `ad network: none` at the foot of the board. Re-uploaded, and the
+new build is **confirmed live** — the itch CDN embed revision changed from `html/19476821/` to
+**`html/19478707/`**, which is the proof the upload took effect rather than sitting queued.
+
+> The suite gained a permanent guard for this. **A correct zip is not the same as an effective
+> upload**, so the assertion reads the **rendered live frame** — the only way to tell the
+> difference. Same "rendered ≠ filled" principle as the ad units.
 
 ---
 
