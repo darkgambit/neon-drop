@@ -213,14 +213,29 @@ the SDK snippet is only issued with the entry. So:
 ```
 1. create the game entry (fields below)      -> GD issues the GAME ID
 2. python tools/make-itch-zip.py --gd-id <GAME_ID>
-3. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)
-4. open the game in GD's preview iframe and watch one full pre-roll  -> integration activated
+3. node .verify/verify-gd-release.mjs        -> must print READY TO UPLOAD
+4. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)
+5. tick the rewarded-ads flag
+6. dashboard: open the game in their iframe and watch one full pre-roll -> SDK activated
+7. dashboard: watch one complete rewarded ad                            -> rewarded verified
 ```
 
 If step 1's form demands a zip before it will show you an id, upload `dist/neon-drop-itch.zip` as a
 placeholder to create the entry, copy the id, then **replace** it with the GD build. A bundle
 without the id is not the finished article — GD denies publishing when the SDK is not integrated
 (§2.6.3).
+
+#### ⚠️ Why the two dashboard checklist items cannot pass until step 4
+
+The dashboard's post-upload list has two open items — **"Implement and test the SDK"** and
+**"Rewarded Ads"** — both requiring you to *watch a complete advertisement*. Neither can complete
+against a bundle with an empty `gdGameId`: `loadGD()` early-returns `false`, GD's SDK is never
+fetched, and **no ad is ever requested**. The game plays perfectly, so it looks like a broken
+integration when in fact the uploaded file simply has no id in it.
+
+That is why step 3 exists. `verify-gd-release.mjs` loads the *actual* artefact and refuses to bless
+it if the id is missing or if it is GD's documentation example id. **Do not upload before it prints
+`READY TO UPLOAD`.**
 
 #### Fields — with the limits that actually apply
 

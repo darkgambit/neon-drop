@@ -110,6 +110,7 @@ Kill the local server before deploying. Starting it from the repo root and point
 | `node .verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `node .verify/verify-itch.mjs` | drives the real itch.io store page, plays the embed, and reads the rendered frame for dev artefacts (14 checks) |
 | `node .verify/verify-gd-build.mjs [gameId]` | rebuilds both portal bundles and proves they are isolated — itch stays `none` with 0 SDK requests, GD loads the SDK (10 checks). Builds into a temp dir; `dist/` is never touched. |
+| `node .verify/verify-gd-release.mjs` | **pre-flight the real `dist/neon-drop-gd.zip`** before uploading: id present, not GD's example id, SDK actually requested at runtime (8 checks). Exits 1 and says DO NOT UPLOAD. |
 | `node .verify/verify-rewarded.mjs` | proves the reward needs a **completed** view — the completion event gives `true`, an early close gives `false` (8 checks) |
 | `node .verify/verify-iframe-fit.mjs` | portrait board in landscape portal frames — no clipping, still playable at 800×600, 640×480, 1024×768, 520×1030 (20 checks) |
 | `node .verify/lighthouse.mjs <baseUrl>` | perf/a11y/best-practices/SEO gate |
