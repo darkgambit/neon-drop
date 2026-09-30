@@ -3,6 +3,7 @@
 <title>Cascade Strategy — How to Build Merge Chains in Neon Drop</title>
 <meta name="description" content="A practical guide to setting up cascade chains in Neon Drop: how gravity re-checks the board, how the combo multiplier compounds, and the staircase pattern that triggers four-link merges.">
 <link rel="canonical" href="https://neon-drop.netlify.app/blog/cascade-strategy.html">
+<script src="/consent.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:radial-gradient(1000px 600px at 15% -5%,rgba(29,233,182,.12),transparent 60%),#050b14;
@@ -30,6 +31,9 @@ border-radius:14px;padding:16px 18px;margin:18px 0}
 color:#04121a;background:linear-gradient(100deg,#1de9b6,#40c4ff)}
 .cta:hover{text-decoration:none}
 code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;font-size:.92em}
+.adslot{margin:34px auto;display:flex;justify-content:center;align-items:center;max-width:100%;overflow:hidden;min-height:50px}
+@media (min-width:760px){.adslot--banner{min-height:60px}}
+.adslot--rect{min-height:250px}
 </style></head><body><div class="wrap">
 <a class="back" href="/">← Play Neon Drop</a>
 
@@ -40,6 +44,8 @@ code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;font-siz
 Merging early feels productive, but it throws away the single biggest source of score in
 the game — the cascade. This guide explains exactly how cascades happen and how to set
 them up on purpose.</p>
+
+<div class="adslot adslot--banner"><script src="/ads-site.js" data-ad="banner"></script></div>
 
 <h2>What a cascade actually is</h2>
 <p>When tiles merge, the board does not just settle once. The engine runs a loop:</p>
@@ -101,6 +107,8 @@ accidental chains more likely.</li>
 <li><b>Respect the ceiling.</b> A staircase needs vertical room. If a column is nearly full,
 you have no space left to feed it.</li>
 </ul>
+
+<div class="adslot adslot--rect"><script src="/ads-site.js" data-ad="rect"></script></div>
 
 <h2>The failure mode to avoid</h2>
 <p>The board ends when all five columns are full and no two touching tiles are equal. That

@@ -13,6 +13,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231de9b6'/><text x='32' y='44' font-size='32' font-family='sans-serif' font-weight='800' text-anchor='middle' fill='%2304121a'>2</text></svg>">
 
+<!-- Must run BEFORE any ad slot: ads-site.js reads window.__adConsent at parse
+     time, and no consent means no ad script is written at all. -->
+<script src="/consent.js"></script>
+
 <!-- ===== ADSENSE: uncomment and paste your publisher ID after approval =====
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 ========================================================================= -->
@@ -109,9 +113,13 @@
   details[open] summary::before{content:"− "}
   details p{color:var(--dim);margin-top:10px;font-size:15px}
 
-  .adslot{margin:30px auto;min-height:100px;display:grid;place-items:center;
-    border:1px dashed rgba(160,220,255,.16);border-radius:14px;color:rgba(143,179,199,.4);
-    font-size:12px;letter-spacing:.14em}
+  .adslot{margin:30px auto;display:flex;justify-content:center;align-items:center;
+    max-width:100%;overflow:hidden;min-height:50px}
+  @media (min-width:760px){
+    .adslot--leader{min-height:90px}
+    .adslot--banner{min-height:60px}
+  }
+  .adslot--rect{min-height:250px}
 
   footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--dim);font-size:14px}
   footer .row{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
@@ -162,8 +170,10 @@
     </div>
   </div>
 
-  <!-- AD SLOT (fills automatically once AdSense is approved & enabled) -->
-  <div class="adslot" id="ad-1" data-ad-slot="">ADVERTISEMENT</div>
+  <!-- Adsterra display ad — 728x90 on desktop, 320x50 on mobile.
+       The script MUST stay inline here: it uses document.write, which is only
+       safe while the parser is active. Do not add defer or async. -->
+  <div class="adslot adslot--leader" id="ad-1"><script src="/ads-site.js" data-ad="leader"></script></div>
 
   <section id="how">
     <h2>How to play</h2>
@@ -189,7 +199,7 @@
     </div>
   </section>
 
-  <div class="adslot" id="ad-2" data-ad-slot="">ADVERTISEMENT</div>
+  <div class="adslot adslot--rect" id="ad-2"><script src="/ads-site.js" data-ad="rect"></script></div>
 
   <section id="guides">
     <h2>Guides &amp; strategy</h2>

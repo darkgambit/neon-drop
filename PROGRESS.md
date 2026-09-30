@@ -19,7 +19,7 @@
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
 | 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 42/42 functional. All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed. Commit `a1b2ad6`. |
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
-| 3 | **Connect the money** — portals + ad networks | 🟡 **A done, B–I not started** | ✅ **itch.io LIVE** — https://kdbdeocampo.itch.io/neon-drop, verified playable 12/12. One checkpoint per platform. All assets ready. See `MONETIZATION_STATUS.md`. |
+| 3 | **Connect the money** — portals + ad networks | 🟡 **A + Adsterra done, B–I not started** | ✅ **itch.io LIVE** — https://kdbdeocampo.itch.io/neon-drop, verified playable 12/12 · ✅ **Adsterra LIVE** — serving real creatives behind a consent gate. ⬜ payout method not attached. One checkpoint per platform. See `MONETIZATION_STATUS.md`. |
 | 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
 | 5 | **Handover** — docs + evidence | 🟡 75% | ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `/evidence` screenshots · ⬜ `LAUNCH_REPORT.md` (write last) |
 
@@ -27,22 +27,22 @@
 
 ## Definition of done — scorecard
 
-Checked 2026-09-30. **Not finished.** Two of six hard requirements are met.
+Checked 2026-09-30. **Not finished.** Three of six hard requirements are met.
 
 | # | Requirement | State | Evidence |
 |---|---|---|---|
-| 1 | Live URL over HTTPS, playable mobile + desktop, zero console errors | ✅ **MET** | 45/45 checks against production; HSTS, http→https 301 |
+| 1 | Live URL over HTTPS, playable mobile + desktop, zero console errors | ✅ **MET** | 47/47 checks against production; HSTS, http→https 301 |
 | 2 | Game LIVE and publicly playable on ≥1 portal | ✅ **MET** | https://kdbdeocampo.itch.io/neon-drop — 12/12 via `.verify/verify-itch.mjs` |
-| 3 | ≥1 ad network integrated, **verifiably making ad requests** | ❌ **NOT MET** | `network: 'none'`; **zero** requests to any ad host. See `MONETIZATION_STATUS.md` § Runtime audit |
+| 3 | ≥1 ad network integrated, **verifiably making ad requests** | ✅ **MET** | **Adsterra live.** 2 units per content page, HTTP 200, 728×90 + 300×250 rendered. `evidence/ads/`. Gated on consent: 0 requests before, 2 after. |
 | 4 | Placeholder grep returns nothing | ✅ **MET** | narrow grep exit 1; `tools/check-placeholders.mjs` 0 active |
-| 5 | Payout details attached to accounts in Angelo's name | ❌ **NOT MET** | Only GitHub, Netlify, itch.io exist. No ad network, no payout method |
+| 5 | Payout details attached to accounts in Angelo's name | ❌ **NOT MET** | No payout method on the Adsterra account yet. **This is now the blocker that matters** — ads serve, so revenue accrues, but it cannot be withdrawn. |
 | 6 | Search Console verified, sitemap submitted | ❌ **NOT MET** | Handshake issued, **deferred by Angelo**. Sitemap is live and valid but unsubmitted |
 | — | All handover docs committed and accurate | 🟡 4/5 | `LAUNCH_REPORT.md` deliberately last |
 
-**Do not describe this project as "set for monetization".** It is *instrumented* for monetization —
-adapter built, fallbacks tested, field values prepared — but nothing is connected and the running
-total is **$0.00**. Requirement 3 is the one that must fall first: it is the only one that can
-begin earning without a review queue.
+**Do not describe this project as "earning".** The ad network is integrated and verifiably
+serving — requirement 3 is met — but the running total is still **$0.00** and no payout method
+is attached. Revenue can now accrue; it cannot yet be collected. Requirement 5 is the next
+one to fall, and it is the only remaining item that needs Angelo's identity.
 
 ---
 
@@ -185,6 +185,78 @@ the Netlify badge earlier: a check that fails for reasons outside the product is
 below, so it still paints `ad network: none` at the foot of the board. The rebuilt zip fixes it;
 it needs a re-upload.
 
+### B. Adsterra — 🟢 LIVE, serving, behind a consent gate
+
+| Item | Value |
+|---|---|
+| Network | **Adsterra** (display banners, `www.highrevenueformat.com`) |
+| Integrated | 2026-09-30 |
+| Units live | 728×90 leader + 300×250 rectangle (landing) · 468×60 banner + 300×250 rectangle (each blog page) |
+| Units approved, unused | 160×600, 160×300 — need a sidebar this layout does not have |
+| Where | **Content pages only.** Never `/game/*` (see below) |
+| Minimum payout | $5, USDT / Paxum |
+| Payout method | ❌ **not attached** — revenue accrues but cannot be withdrawn yet |
+
+**Why Adsterra and not AdSense first.** AdSense gates on a content review and pays only by
+bank transfer to a supported region; Angelo's bank is in the Philippines and he is temporarily
+in Libya. Adsterra's minimum is $5 and it pays in **USDT/Paxum**, which carries no bank-region
+constraint. It is the network that can actually pay him. AdSense remains a Phase 3 item for
+the higher CPM, not as the first revenue.
+
+**Verified serving, not assumed.** `.verify/shot-ads-evidence.mjs` writes
+`evidence/ads/ad-evidence.json` plus screenshots of each rendered unit:
+
+```
+no consent  : adRequests=0  banner=1  stored=null
+with consent: adRequests=2  iframes=2  hosts=["www.highrevenueformat.com"]
+  200  49580B  .../ea195481585cda608a5473ea655629f2/invoke.js
+  200  49630B  .../743702bbd12151692c0084aff88afb14/invoke.js
+rendered frames:
+  728x90   title="Advertisement"  about:blank
+  300x250  title="Advertisement"  about:blank
+console errors: none
+VERDICT: PASS — gate holds, ads fire after consent.
+```
+
+`evidence/ads/slot-1.png` and `slot-2.png` show **real paid creatives**, not blank frames —
+which is the difference between "the tag is on the page" and "the network is filling it".
+
+**The consent gate is real, and it is asserted in both directions.** `privacy.html` claimed a
+consent banner existed; it did not. Rather than soften the policy to match the code, `consent.js`
+was built so the policy became true. It runs synchronously in `<head>` before any slot and sets
+`window.__adConsent`; `ads-site.js` reads it at parse time and writes **nothing** if consent is
+absent, so no third-party script is fetched at all. Accept stores `granted` and reloads;
+Decline stores `denied` and the ads never load again.
+
+A one-sided "did an ad fire?" check cannot distinguish a revenue bug from the gate working, so
+`verify.mjs` asserts both: **0 requests before consent, 2 after**. `.verify/verify-ads.mjs`
+covers the four visitor paths independently — first visit, accepted, declined, game page — **18/18**.
+
+**Ads are deliberately absent from `/game/*`.** The same build is uploaded to itch.io and
+embedded by portals that monetise the game themselves. Injecting our own banners inside that
+frame would break the embed and breach their terms. `#adTop` in `game/index.html` exists for
+the *portal's* SDK to fill. This also means the itch zip stays a clean, ad-free build.
+
+**Two implementation details that are not optional:**
+
+1. **`ads-site.js` must stay parser-blocking.** Adsterra's `invoke.js` injects its iframe with
+   `document.write`. If it runs after parsing completes, `document.write` calls `document.open()`
+   and **erases the page**. So no `defer`, no `async`, inline at the slot in document order.
+2. **`invoke.js` creates iframes with no `title`.** Lighthouse's `frame-title` audit is weight 7
+   and scored 0, dropping the landing page's accessibility from 100 to 95. Screen readers
+   announce an untitled iframe as just "frame". We cannot edit their script, so a
+   `MutationObserver` + two timeouts title the frame `"Advertisement"` as soon as it appears.
+   Accessibility went back to **100 on all four measurements**.
+
+**Measured cost of running ads.** Best-practices on the landing page fell 100 → **77**. This is
+**not fixable** — the audit penalises third-party cookies from the ad network, which is inherent
+to ad monetization. It will not pass the ≥90 gate while ads are on. Recorded rather than hidden.
+The performance cost was recovered by the same lazy-loading work (see the Lighthouse section).
+
+**Open item — impressions are unconfirmed on Adsterra's side.** Our side is proven: requests
+fire, creatives render. Whether Adsterra *counts* them shows up in their dashboard, and that is
+the number that becomes money. Check it after ~24 h of real traffic.
+
 ### Defect found and fixed: the debug label shipped to players
 
 `game/game.js` set `#netTag` unconditionally:
@@ -247,12 +319,25 @@ Two measurements, both real, measuring different things.
 
 **A. Code quality — local server, no network variable → ALL THRESHOLDS MET** (`.verify/out-lh-local/`)
 
+Measured 2026-09-30 **with the consent banner and the ad slots present** (a first-time visitor
+sees the banner and no ads, which is what these numbers describe):
+
 | page | form | perf | a11y | bp | seo |
 |---|---|---|---|---|---|
 | landing | mobile | **100** | 100 | 100 | 100 |
-| game | mobile | **100** | 100 | 100 | 100 |
-| landing | desktop | **96** | 100 | 100 | 100 |
-| game | desktop | **95** | 100 | 100 | 100 |
+| game | mobile | **98** | 100 | 100 | 100 |
+| landing | desktop | **95** | 100 | 100 | 100 |
+| game | desktop | **94** | 100 | 100 | 100 |
+
+**A real a11y defect found by this run, in our own code.** The first measurement after the
+consent banner landed showed landing a11y at **96**, not 100 — `link-in-text-block` (weight 7):
+the banner's `/privacy.html` link was distinguished from surrounding text **by colour alone**.
+Fixed with `text-decoration:underline`. Back to 100 everywhere.
+
+**Note the consent-state dependency.** These numbers are for a *first visit* (banner, no ads).
+Once the visitor accepts, the ad iframes load and best-practices drops to **77** — that is the
+third-party-cookie penalty and it is not fixable. Measure both states or you will report the
+wrong number.
 
 **B. Production from this machine → mobile passes, desktop performance fails** (`.verify/out-lh-direct/`)
 
@@ -436,10 +521,16 @@ tile values deterministic. **No game code was modified to make it testable.**
 | `tools/make-itch-zip.py` | builds `dist/neon-drop-itch.zip`, `index.html` flat at root |
 | `tools/record-clips.mjs` | records the 10 vertical marketing clips; `--only <id>` for one, `--captions-only` to rebuild the sheet |
 | `tools/shot.mjs` | evidence screenshots of a running site (desktop + mobile) |
-| `.verify/verify.mjs` | 42-check functional suite — `node .verify/verify.mjs <baseUrl>` |
+| `tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
+| `.verify/verify.mjs` | 47-check functional suite — `node .verify/verify.mjs <baseUrl>` |
+| `.verify/verify-ads.mjs` | consent gate + ad rendering, 4 visitor paths, 18 checks |
+| `.verify/shot-ads-evidence.mjs` | `evidence/ads/` — ad request log + screenshots of each rendered unit |
+| `.verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed, 12 checks |
+| `.verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `.verify/lighthouse.mjs` | Lighthouse gate — `node .verify/lighthouse.mjs <baseUrl>` |
 
-Local server: `python -m http.server 8080` from the project root → `http://127.0.0.1:8080`.
+Local server: `python -m http.server 8080 --directory _site` → `http://127.0.0.1:8080`.
+Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
 
 ---
 
@@ -472,6 +563,34 @@ Local server: `python -m http.server 8080` from the project root → `http://127
 - **GSC handshake deferred by Angelo** ("continue") — recorded as deferred, not skipped.
 - ⚠️ Bulk `rm` of the raw clip captures was blocked by a sandbox safe-delete guard (59 files in one
   glob). Harmless — the raw captures are gitignored. Delete them in batches of ≤10 if tidying.
+
+### 2026-09-30 — Adsterra live (requirement 3 met)
+
+- **Adsterra integrated for real.** `ads-site.js` (banner loader, consent-gated, viewport-aware)
+  and `consent.js` (the gate `privacy.html` had been claiming) added; wired into `index.html` and
+  all three blog pages; both added to the deploy allowlist. 4 units live, 2 approved units held
+  back because the layout has no sidebar.
+- **Built the consent system rather than softening the policy.** `privacy.html` §3 asserted a
+  consent banner that did not exist. The fix was to make the claim true, not to weaken it.
+- **Verified serving with hard evidence, not a status code.** `evidence/ads/` holds the request
+  log and screenshots of the actual paid creatives: HTTP 200, 49.5 KB payloads, 728×90 and
+  300×250 frames filled. A rendered iframe is not a filled one — the screenshots are the proof.
+- **Made the ad assertion two-sided.** "No ad fired" is ambiguous between a privacy gate working
+  and a revenue bug, so `verify.mjs` now asserts 0 requests before consent and 2 after.
+  `verify-ads.mjs` covers 4 visitor paths: **18/18**.
+- **Found and fixed a real a11y defect in our own consent banner** — `link-in-text-block`
+  (weight 7): the `/privacy.html` link was distinguishable by colour alone. Underlined it;
+  landing a11y 96 → **100**.
+- **Hit the `_site` lock again**, exactly as documented. Killed the orphaned server on 8099.
+  Then changed the documented serve recipe to `--directory` so the trap stops recurring.
+- **Also found:** `curl` to `127.0.0.1` returns **502** in this sandbox because `HTTP_PROXY` is
+  exported; and Lighthouse dies with `LanternError: NO_LCP` for the same reason. Both need the
+  proxy unset. Documented in `MAINTENANCE.md`.
+- **Result: production 47/47 · verify-ads 18/18 · Lighthouse all thresholds met on all 4
+  measurements · acceptance grep 0 matches · every private path 404, every public path 200.**
+- **Requirement 3 of the definition of done flipped to MET.** Revenue is still **$0.00** and
+  nothing is withdrawable — **no payout method is attached to the Adsterra account.** That is
+  now the single highest-value open item.
 
 ---
 

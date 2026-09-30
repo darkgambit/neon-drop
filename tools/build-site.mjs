@@ -34,6 +34,8 @@ const FILES = [
   'robots.txt',
   'sitemap.xml',
   'ads.txt',
+  'ads-site.js',
+  'consent.js',
   'og-cover.jpg',
 ];
 

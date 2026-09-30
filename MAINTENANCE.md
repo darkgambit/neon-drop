@@ -104,9 +104,12 @@ Kill the local server before deploying. Starting it from the repo root and point
 
 | Command | What it does |
 |---|---|
-| `node .verify/verify.mjs http://127.0.0.1:8080` | 45 functional checks (also accepts the live URL) |
+| `node .verify/verify.mjs <baseUrl>` | 47 functional checks (accepts localhost or the live URL) |
+| `node .verify/verify-ads.mjs <baseUrl>` | consent gate + ad rendering across 4 visitor paths (18 checks) |
+| `node .verify/shot-ads-evidence.mjs <baseUrl>` | writes `evidence/ads/` — request log + screenshots of each rendered unit |
+| `node .verify/audit-monetization.mjs` | what the **game** adapter is doing at runtime |
 | `node .verify/verify-itch.mjs` | drives the real itch.io store page and plays the embed (12 checks) |
-| `node .verify/lighthouse.mjs http://127.0.0.1:8080` | perf/a11y/best-practices/SEO gate |
+| `node .verify/lighthouse.mjs <baseUrl>` | perf/a11y/best-practices/SEO gate |
 | `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |
 | `node tools/shot-portal.mjs [url] [outDir]` | 3 store screenshots at 1040×2060, seeded and reproducible |
@@ -117,8 +120,18 @@ repo root can pass while production differs:
 
 ```bash
 node tools/build-site.mjs
-cd _site && python -m http.server 8080     # then stop it before deploying
+python -m http.server 8080 --directory _site --bind 127.0.0.1   # then stop it before deploying
 ```
+
+> **Use `--directory`, do not `cd` into `_site`.** `cd _site && python -m http.server` makes
+> `_site` the server's **working directory**, and Windows will not let `tools/build-site.mjs`
+> delete a directory that is a live process's CWD. The deploy then dies with
+> `Error while running build`. `--directory` keeps the CWD at the repo root and sidesteps it
+> entirely.
+
+> **Localhost + a proxy.** This sandbox exports `HTTP_PROXY`/`HTTPS_PROXY`, so `curl` to
+> `127.0.0.1` can return **502** and Lighthouse can fail with `LanternError: NO_LCP`. Run with
+> `HTTP_PROXY= HTTPS_PROXY= NO_PROXY=127.0.0.1,localhost` (or `curl --noproxy '*'`).
 
 ### How the harness works (so you don't "fix" it by accident)
 
@@ -196,14 +209,60 @@ GitHub App authorised once, in a browser.
 
 ---
 
+## Ads and consent
+
+**Two separate money paths. Do not conflate them.**
+
+| | Site pages (`/`, `/blog/*`) | Game build (`/game/*`, the itch zip) |
+|---|---|---|
+| Monetised by | Us, with **Adsterra** | The portal that embeds it (their SDK) |
+| Files | `consent.js` + `ads-site.js` | `game/monetize.js` |
+| State | 🟢 live | ⬜ none, **by design** |
+
+`Ads.network === 'none'` on the game page is **correct**. The same zip is embedded by portals
+that monetise it themselves; our own banners inside that frame would break the embed and breach
+their terms.
+
+### Adding or changing an ad unit
+
+1. Add the key to `UNITS` in `ads-site.js` (keys are public — they appear in page source by design).
+2. Put a slot in the HTML: `<div class="adslot adslot--leader"><script src="/ads-site.js" data-ad="leader"></script></div>`.
+3. `node tools/build-site.mjs` → deploy → `node .verify/verify-ads.mjs <url>`.
+
+### Two constraints that must not be "optimised" away
+
+- **`ads-site.js` stays parser-blocking.** No `defer`, no `async`, inline at the slot. Adsterra's
+  `invoke.js` injects its iframe with `document.write`; if it runs after parsing completes it
+  calls `document.open()` and **erases the page**.
+- **The iframe `title` is set by our code.** `invoke.js` creates untitled iframes, which fails
+  Lighthouse's `frame-title` (weight 7) and makes screen readers announce "frame". A
+  `MutationObserver` + two timeouts set `title="Advertisement"`.
+
+### Consent
+
+`consent.js` runs synchronously in `<head>`, **before any slot**, and sets `window.__adConsent`.
+`ads-site.js` reads it at parse time and writes nothing if it is absent — so no third-party
+script is fetched at all. Accept stores `granted` and reloads; Decline stores `denied` and ads
+never load again. `/game/*` loads neither file.
+
+**`privacy.html` §3 states this gate exists. If you change the gate, change the policy.** The
+policy was originally aspirational; `consent.js` was written so it became true. Don't let that
+invert again.
+
+**When testing, assert both directions.** "No ad fired" is ambiguous — it is either the gate
+working or a revenue bug. `verify.mjs` checks 0 requests before consent and 2 after.
+
+---
+
 ## Periodic checks
 
 | How often | What |
 |---|---|
 | After every deploy | the 200/404 curl loop above |
 | Monthly | `node .verify/verify.mjs https://neon-drop.netlify.app` |
+| Monthly | `node .verify/verify-ads.mjs https://neon-drop.netlify.app` — an ad slot can silently die |
 | Monthly | Search Console → check for indexing errors |
-| Monthly | Ad network dashboards → confirm impressions are non-zero |
+| Monthly | **Adsterra dashboard → confirm impressions are non-zero.** Our side serving is not proof they count it. |
 | On any game change | re-run `make-itch-zip.py` and re-upload to the portals |
 | Yearly | Netlify free-tier bandwidth (100 GB/month) — nowhere near it yet |
 

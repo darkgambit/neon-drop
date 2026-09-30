@@ -1,0 +1,67 @@
+{
+  "base": "https://neon-drop.netlify.app",
+  "capturedAt": "2026-09-30T02:33:37.016Z",
+  "steps": [
+    {
+      "name": "first visit (no consent)",
+      "newAdRequests": 0
+    },
+    {
+      "name": "accept consent",
+      "newAdRequests": 2
+    }
+  ],
+  "noConsent": {
+    "adRequests": 0,
+    "consentBanner": 1,
+    "stored": null
+  },
+  "withConsent": {
+    "adRequests": 2,
+    "iframes": [
+      {
+        "title": "Advertisement",
+        "w": 728,
+        "h": 90,
+        "src": "about:blank"
+      },
+      {
+        "title": "Advertisement",
+        "w": 300,
+        "h": 250,
+        "src": "about:blank"
+      }
+    ],
+    "uniqueHosts": [
+      "www.highrevenueformat.com"
+    ]
+  },
+  "responses": [
+    {
+      "url": "https://www.highrevenueformat.com/ea195481585cda608a5473ea655629f2/invoke.js",
+      "status": 200,
+      "bytes": 49580
+    },
+    {
+      "url": "https://www.highrevenueformat.com/743702bbd12151692c0084aff88afb14/invoke.js",
+      "status": 200,
+      "bytes": 49630
+    },
+    {
+      "url": "https://www.highrevenueformat.com/51b71eaa7c5c6e2783278929c096e210/invoke.js",
+      "status": 200,
+      "bytes": 49580
+    },
+    {
+      "url": "https://www.highrevenueformat.com/743702bbd12151692c0084aff88afb14/invoke.js",
+      "status": 200,
+      "bytes": 49560
+    }
+  ],
+  "consoleErrors": [],
+  "slots": 2,
+  "blog": {
+    "iframes": 2,
+    "adRequests": 4
+  }
+}

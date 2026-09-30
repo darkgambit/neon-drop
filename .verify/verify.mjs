@@ -97,7 +97,11 @@ const boardTopY = (hud, cell) => hud.guide ? hud.guide.y + 0.65 * cell - 1 : nul
 
 const results = [];
 let consoleErrors = [];
-let failedRequests = [];
+let failedRequests = [];      // FIRST-PARTY only — these count against the app
+let thirdPartyFailures = [];  // ad/analytics hosts: reported, never fatal
+let adRequests = [];          // third-party ad calls, asserted POSITIVELY
+const BASE_ORIGIN = new URL(BASE).origin;
+const isFirstParty = (u) => u.startsWith(BASE_ORIGIN);
 
 function record(name, pass, detail = '') {
   results.push({ name, pass, detail });
@@ -207,8 +211,18 @@ async function newPage(browser, { hasTouch = false, viewport = { width: 414, hei
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error') consoleErrors.push(`[${page.url().split('/').pop()}] ${m.text()}`); });
   page.on('pageerror', e => consoleErrors.push(`[pageerror] ${e.message}`));
-  page.on('requestfailed', r => failedRequests.push(`${r.url()} :: ${r.failure()?.errorText}`));
-  page.on('response', r => { if (r.status() >= 400) failedRequests.push(`${r.status()} ${r.url()}`); });
+  // Scope failure attribution by origin. Adsterra banners are third-party by
+  // design: ad blockers, DNS filters and the network's own latency make them
+  // fail for reasons that are not our code. Collect them, print them, never
+  // fail on them — but assert the ad calls DO happen (see T12), so filtering
+  // the noise does not silently delete the coverage.
+  const noteFailure = (u, detail) => {
+    const line = `${detail} ${u}`;
+    (isFirstParty(u) ? failedRequests : thirdPartyFailures).push(line);
+  };
+  page.on('requestfailed', r => noteFailure(r.url(), r.failure()?.errorText ?? 'failed'));
+  page.on('response', r => { if (r.status() >= 400) noteFailure(r.url(), String(r.status())); });
+  page.on('request', r => { if (/highrevenueformat\.com/.test(r.url())) adRequests.push(page.url()); });
   await initHooks(page);
   return { ctx, page };
 }
@@ -522,8 +536,38 @@ section('T12  Console errors and failed requests');
   const uniqReq = [...new Set(failedRequests)];
   record('Zero console errors across every page and viewport', uniqErr.length === 0,
     uniqErr.length ? uniqErr.slice(0, 8).join(' | ') : 'none');
-  record('Zero 404s / failed requests', uniqReq.length === 0,
+  record('Zero first-party 404s / failed requests', uniqReq.length === 0,
     uniqReq.length ? uniqReq.slice(0, 8).join(' | ') : 'none');
+
+  // Positive assertion for what we filtered out. Without this, scoping the
+  // check to first-party would hide a page that silently lost its ad tag —
+  // which is invisible revenue loss.
+  //
+  // Both directions are asserted, because the consent gate makes "no ad fired"
+  // ambiguous on its own: it is either a revenue bug (bad) or the gate working
+  // (good). A one-sided check cannot tell them apart, so:
+  //   no consent  -> ZERO ad requests   (privacy gate is real)
+  //   consent     -> ad requests FIRE   (the money path is wired)
+  const { ctx: gctx, page: gpage } = await newPage(browser);
+  await gpage.goto(`${BASE}/`, { waitUntil: 'load' });
+  await sleep(1200);
+  const adNoConsent = adRequests.length;
+  await gpage.evaluate(() => { try { localStorage.setItem('nd_ad_consent', 'granted'); } catch (e) {} });
+  await gpage.goto(`${BASE}/`, { waitUntil: 'load' });
+  await sleep(2600);
+  const adWithConsent = adRequests.length;
+  await gctx.close();
+
+  record('No ad request fires before consent is granted',
+    adNoConsent === 0, `${adNoConsent} ad request(s) on a first visit`);
+  const adPages = new Set(adRequests);
+  record('Ad tag present on content pages after consent (728x90 / 320x50 / 300x250 units requested)',
+    adWithConsent > 0, `${adWithConsent} ad request(s) from ${adPages.size} page load(s)`);
+  if (thirdPartyFailures.length) {
+    console.log(`\n  note: ${thirdPartyFailures.length} third-party request(s) failed ` +
+      `(ad host — expected with blockers/filters, not counted against the app)`);
+    for (const t of [...new Set(thirdPartyFailures)].slice(0, 3)) console.log('        ' + t.slice(0, 120));
+  }
 }
 
 section('T13  No developer-facing text ships to players');

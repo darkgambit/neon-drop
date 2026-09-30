@@ -6,7 +6,8 @@
 **Last updated:** 2026-09-30
 **Live game:** https://neon-drop.netlify.app
 **itch.io listing:** https://kdbdeocampo.itch.io/neon-drop
-**Current revenue: $0.00.** No ad network is integrated yet. Nothing has been paid out.
+**Current revenue: $0.00 accrued and uncounted.** Adsterra is **live and serving real creatives**
+on the content pages. Nothing can be withdrawn yet — **no payout method is attached**. See § Payout.
 
 ---
 
@@ -36,19 +37,114 @@ portal — that is a business decision, not a technical one.
 | E | **Poki** | Portal | ⬜ assets ready | Needs account + review |
 | F | **Google AdSense** | Self-hosted ads | ⬜ not started | Needs account + approval (requires real traffic) |
 | G | **Ko-fi / Buy Me a Coffee** | Donations | ⬜ not started | Needs account |
-| H | **Adsterra** | Self-hosted ads | ⬜ not started | Needs account — **pays crypto from $5** |
+| H | **Adsterra** | Self-hosted ads | 🟢 **LIVE — serving verified creatives** | **Payout method not attached.** Needs Paxum/USDT details in Angelo's name. |
 | I | **Long tail** (Y8, GameMonetize, Newgrounds, Armor Games, freegames.io) | Portals | ⬜ not started | Non-exclusive only |
 
-**Definition-of-done progress:** "game live and publicly playable on ≥1 portal" is now
-**satisfied** by itch.io. Still outstanding: an ad network making verifiable ad requests,
-and payout details attached in Angelo's name.
+**Definition-of-done progress:** two of the three money requirements are satisfied — *game live on
+≥1 portal* (itch.io) and *≥1 ad network verifiably making ad requests* (Adsterra). The last one,
+*payout details attached in Angelo's name*, is now the single remaining blocker on revenue.
 
 ---
 
-## Runtime audit — is anything actually monetizing? **No.**
+## Two separate money paths — do not conflate them
 
-Run it yourself: `node .verify/audit-monetization.mjs`. It loads the live game, starts a game,
-exercises both ad paths, and records every request the page makes to a known ad host.
+This is the most important distinction on this page, and getting it wrong will cause you to
+"fix" something that is not broken.
+
+| | **Site pages** (`/`, `/blog/*`) | **Game build** (`/game/*`, the itch zip) |
+|---|---|---|
+| Monetised by | **Us, with Adsterra** | **The portal that embeds it** (their SDK) |
+| Ad state | 🟢 **live, serving** | ⬜ intentionally none |
+| `Ads.network` | n/a — plain HTML pages | `'none'` **by design** |
+| Why | These are our pages; we own the inventory | The same zip is embedded by portals who monetise it themselves. Injecting our own banners inside that frame would break the embed and breach their terms. |
+
+So `network: 'none'` on the game page is **correct and deliberate**, not a failure. If you ever
+see a real ad network name there, something has gone wrong.
+
+---
+
+## Site pages — Adsterra, verified serving
+
+Run it yourself: `node .verify/shot-ads-evidence.mjs https://neon-drop.netlify.app`. It walks both
+consent paths, records every third-party request, and screenshots each rendered unit.
+
+```
+no consent  : adRequests=0  banner=1  stored=null
+with consent: adRequests=2  iframes=2  hosts=["www.highrevenueformat.com"]
+  200  49580B  .../ea195481585cda608a5473ea655629f2/invoke.js
+  200  49630B  .../743702bbd12151692c0084aff88afb14/invoke.js
+rendered frames:
+  728x90   title="Advertisement"  about:blank
+  300x250  title="Advertisement"  about:blank
+console errors: none
+VERDICT: PASS — gate holds, ads fire after consent.
+```
+
+`evidence/ads/slot-1.png` and `slot-2.png` show **real paid creatives** filling those frames. A
+rendered frame is not the same as a filled one — a blank iframe would still be a 200 — so the
+screenshots are the part that matters.
+
+| Unit | Size | Where |
+|---|---|---|
+| leader | 728×90 desktop / 320×50 mobile | `index.html` — above the fold, `#ad-1` |
+| rect | 300×250 | `index.html` — mid-content, `#ad-2` |
+| banner | 468×60 desktop / 320×50 mobile | each `blog/*.html` — before the first `<h2>` |
+| rect | 300×250 | each `blog/*.html` — before the last `<h2>` |
+
+Approved but deliberately unused: **160×600** and **160×300** — they need a sidebar this layout
+does not have, and stacking every approved size on one page is both slow and hostile.
+
+### The consent gate is real, and asserted in both directions
+
+`privacy.html` claimed a consent banner existed. It did not. Rather than weaken the policy to
+match the code, `consent.js` was built so the policy became true.
+
+```
+first visit  -> banner shown, ZERO ad scripts fetched
+Accept       -> stored 'granted', reload, ads render from first paint
+Decline      -> stored 'denied', no ads ever again
+/game/*      -> neither banner nor ads
+```
+
+Because "no ad fired" is ambiguous on its own — it is either a privacy gate working or a revenue
+bug — `verify.mjs` asserts **both directions**: 0 requests before consent, 2 after. And
+`.verify/verify-ads.mjs` covers the four visitor paths independently: **18/18**.
+
+**Two implementation constraints that must not be "optimised" away:**
+
+1. **`ads-site.js` must stay parser-blocking** — no `defer`, no `async`. Adsterra's `invoke.js`
+   injects its iframe via `document.write`; running it after parsing completes triggers
+   `document.open()` and **erases the page**.
+2. **The ad iframes are titled by our code.** `invoke.js` creates them with no `title`, which
+   fails Lighthouse's `frame-title` audit (weight 7) and, more importantly, makes a screen reader
+   announce them as just "frame". A `MutationObserver` + two timeouts set `title="Advertisement"`.
+
+**Measured cost:** running ads drops landing-page best-practices from 100 to **77**, because the
+audit penalises the ad network's third-party cookies. This is **inherent to ad monetization and
+not fixable**. Recorded rather than hidden.
+
+### Payout — ⬜ the one remaining blocker
+
+| | |
+|---|---|
+| Network | Adsterra |
+| Minimum payout | **$5** |
+| Methods | **USDT / Paxum** — no bank-region constraint |
+| Attached? | ❌ **No.** The account has no payout method, so revenue accrues but cannot be withdrawn. |
+
+**Why this network and not AdSense first:** AdSense pays by bank transfer to a supported region;
+Angelo's bank is in the Philippines and he is temporarily in Libya. Adsterra's $5 minimum and
+crypto payout remove that constraint entirely — it is the network that can actually pay him.
+
+**Next action for Angelo:** open the Adsterra dashboard → *Payment settings* → add a **Paxum**
+account or a **USDT** wallet address. That is the last step between "ads serve" and "money arrives".
+
+---
+
+## Runtime audit on the GAME build — still `none`, and that is correct
+
+Run it yourself: `node .verify/audit-monetization.mjs`. It loads the live **game**, starts a game,
+exercises both ad paths, and records every request to a known ad host.
 
 ```
 === adapter state on the LIVE build ===
@@ -70,35 +166,34 @@ Read it carefully, because two lines look like good news and are not:
   **not** evidence of monetization. There is no ad.
 - `"interstitial": "undefined"` — the interstitial path resolves without ever calling a network.
 
-**Live config, verified over HTTPS:** `network: 'auto'`, `gdGameId: ''`, `adsenseClient: ''`.
+This is the **portal** path, and it stays empty until a portal embeds the game and supplies its
+SDK. The site's own revenue comes from the Adsterra path above, which is a different mechanism on
+different pages.
+
+**Live game config, verified over HTTPS:** `network: 'auto'`, `gdGameId: ''`, `adsenseClient: ''`.
 `ads.txt` has **0 active records**. `/game/index.html` loads **0** ad SDKs. The landing page's one
 `googlesyndication` match is the inert commented-out instruction block.
 
-**Revenue to date: $0.00.** No ad network is connected. No payout method is attached to anything.
-`itch.io` is free-to-play and cannot earn.
-
 ### What that means, plainly
 
-The *plumbing* is done and tested. The *connections* are not. Nothing can earn until an account
-exists on at least one network and its ID is pasted into `game/monetize.js`.
+The site now earns from its own pages. The **game** earns nothing on its own — it earns when a
+portal that has its own ad network embeds it, which needs those accounts (B–E, I).
 
 | Ready now (built + verified) | Missing (needs an account) |
 |---|---|
-| Multi-network adapter with a tested safe fallback | Any ad-network account |
-| `Ads.network` / `.ready` / `.debug` public state | A real `gdGameId` / `adsenseClient` |
-| Per-portal field values for 8 platforms | Payout details in Angelo's name |
-| Upload bundle, cover art, 3 screenshots, 10 clips | Analytics (Cloudflare / Umami) |
-| `ads.txt` scaffold with instructions | Search Console verification |
+| ✅ Adsterra live and serving on content pages | Adsterra payout method |
+| ✅ Consent gate verified 18/18 across 4 paths | Accounts for B–E and I |
+| Multi-network adapter with a tested safe fallback | A real `gdGameId` / `adsenseClient` |
+| Per-portal field values for 8 platforms | Analytics (Cloudflare / Umami) |
+| Upload bundle, cover art, 3 screenshots, 10 clips | Search Console verification |
 | Legal pages, 3 guides, launch-post drafts | Any portal beyond itch.io |
 
-**Recommended order: A → B → H → F → C → D → E → G → I.**
+**Recommended order: A ✅ → H ✅ → payout → B → F → C → D → E → G → I.**
 
-Rationale for deviating from the brief's order: **Adsterra (H) is pulled forward.**
-Per Angelo's notes, most ad programs gate payment on the *bank account's region*,
-which is a problem for a Philippine account. Adsterra pays **USDT/Paxum from a $5
-minimum** with no bank-region constraint. That makes it the fastest route to
-actually receiving money, so it should not sit at the end of the queue. The brief's
-original order is otherwise preserved.
+Rationale for deviating from the brief's order: **Adsterra (H) was pulled forward.** Most ad
+programs gate payment on the *bank account's region*, which is a problem for a Philippine
+account. Adsterra pays **USDT/Paxum from a $5 minimum** with no bank-region constraint, making it
+the fastest route to actually receiving money. The brief's original order is otherwise preserved.
 
 ---
 
@@ -225,23 +320,36 @@ Low effort, low ceiling. Worth having, not worth prioritising.
 
 ---
 
-### H. Adsterra ⭐ pulled forward
+### H. Adsterra — 🟢 **LIVE** ⭐ pulled forward
 | | |
 |---|---|
-| Type | Self-hosted ad network |
+| Type | Self-hosted ad network (display banners) |
+| State | 🟢 **Live and serving real creatives** on `/`, `/blog/*` |
+| Ad host | `www.highrevenueformat.com` |
 | Minimum payout | **$5** |
 | Payout method | **USDT / Paxum — no bank-region requirement** |
-| Why it matters | See below |
+| Payout attached | ❌ **No** — the one remaining blocker |
+| Units live | 728×90, 300×250 (landing) · 468×60, 300×250 (each blog page) |
+| Units approved, unused | 160×600, 160×300 — need a sidebar this layout lacks |
+| Consent | Required. No ad script loads until the visitor accepts. |
+| Exclusivity | **None.** Adsterra is a self-serve ad network; it makes no claim on the game. |
+| Where | **Content pages only** — never `/game/*` |
 
-Per Angelo's standing notes: many ad programs gate payment on the **bank account's
-region**, not on where the person lives — so moving country does not unlock a
-payout method. Amazon Associates needs a bank account in the marketplace's own
-region; its cross-border option needs an IBAN/BIC, which Philippine accounts do not
-have. Programs that pay crypto have no such constraint.
+**Why it was pulled to the front.** Many ad programs gate payment on the **bank account's
+region**, not on where the person lives — so moving country does not unlock a payout method.
+Amazon Associates needs a bank account in the marketplace's own region; its cross-border option
+needs an IBAN/BIC, which Philippine accounts do not have. Adsterra's **$5 minimum and USDT/Paxum
+payout carry no such constraint**, which makes it the most reliable path to actually receiving
+money and the correct first network rather than the last.
 
-**That makes Adsterra the most reliable path to actually receiving money**, and the
-$5 minimum means the first payout arrives after trivial traffic rather than after
-a $100 threshold. It should be treated as the primary near-term earner.
+**Why not AdSense first:** AdSense pays by bank transfer to a supported region and wants a real
+traffic history before approving. It remains on the list for its higher CPM — it is simply not
+the network that can pay *first*.
+
+**Impression counting is unconfirmed on Adsterra's side.** Our side is proven — requests fire,
+HTTP 200, creatives render (see § Site pages). Whether Adsterra *counts* those impressions shows
+up in their dashboard, and that number is what becomes money. Check it after ~24 h of real
+traffic before drawing conclusions.
 
 ---
 
@@ -258,15 +366,17 @@ submit and each adds a little traffic, but they will not move the needle alone.
 
 Stated plainly so there are no surprises:
 
-- **Nothing here pays on a schedule you control.** Portal review takes days to
-  weeks. AdSense takes days and wants real traffic.
-- **First money is small.** Adsterra pays from $5; AdSense and GameDistribution
-  need $100 / €100 first.
-- **Traffic is the whole game.** No traffic means no revenue regardless of how many
-  networks are integrated. That is why Phase 4 (the articles, the clips, the launch
-  posts) matters more than the number of logos on this page.
-- **Portal revenue shares are on net, not gross**, so the headline percentage is
-  never what lands.
+- **Adsterra is live, so the clock has started — but $0 has been counted and nothing is
+  withdrawable until a payout method is attached.** That is a 2-minute task in the Adsterra
+  dashboard and it is the highest-value thing left to do.
+- **Nothing here pays on a schedule you control.** Portal review takes days to weeks. AdSense
+  takes days and wants real traffic.
+- **First money is small.** Adsterra pays from $5; AdSense and GameDistribution need $100 / €100
+  first. At typical display CPMs, $5 is a few thousand impressions — real traffic, not a formality.
+- **Traffic is the whole game.** No traffic means no revenue regardless of how many networks are
+  integrated. That is why Phase 4 (the articles, the clips, the launch posts) matters more than
+  the number of logos on this page. Ads on a page nobody visits earn nothing.
+- **Portal revenue shares are on net, not gross**, so the headline percentage is never what lands.
 
 ---
 
