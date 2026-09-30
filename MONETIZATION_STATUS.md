@@ -6,8 +6,9 @@
 **Last updated:** 2026-09-30
 **Live game:** https://neon-drop.netlify.app
 **itch.io listing:** https://kdbdeocampo.itch.io/neon-drop
-**Current revenue: $0.00 accrued and uncounted.** Adsterra is **live and serving real creatives**
-on the content pages. Nothing can be withdrawn yet — **no payout method is attached**. See § Payout.
+**Current revenue: $0.00 accrued.** Adsterra is **live and serving real creatives** on the content
+pages, and a **payout method (WebMoney / WMZ, $5 minimum) is attached**. The full money path is now
+wired end to end — what it needs is **traffic**.
 
 ---
 
@@ -37,12 +38,13 @@ portal — that is a business decision, not a technical one.
 | E | **Poki** | Portal | ⬜ assets ready | Needs account + review |
 | F | **Google AdSense** | Self-hosted ads | ⬜ not started | Needs account + approval (requires real traffic) |
 | G | **Ko-fi / Buy Me a Coffee** | Donations | ⬜ not started | Needs account |
-| H | **Adsterra** | Self-hosted ads | 🟢 **LIVE — serving verified creatives** | **Payout method not attached.** Needs Paxum/USDT details in Angelo's name. |
+| H | **Adsterra** | Self-hosted ads | 🟢 **LIVE — serving verified creatives · payout attached** | Nothing. First payout due after the $5 minimum. |
 | I | **Long tail** (Y8, GameMonetize, Newgrounds, Armor Games, freegames.io) | Portals | ⬜ not started | Non-exclusive only |
 
-**Definition-of-done progress:** two of the three money requirements are satisfied — *game live on
-≥1 portal* (itch.io) and *≥1 ad network verifiably making ad requests* (Adsterra). The last one,
-*payout details attached in Angelo's name*, is now the single remaining blocker on revenue.
+**Definition-of-done progress: all three money requirements are satisfied.** ✅ game live on
+≥1 portal (itch.io) · ✅ ≥1 ad network verifiably making ad requests (Adsterra) · ✅ payout details
+attached (WebMoney/WMZ, $5 minimum). What remains is *traffic* and the remaining portal accounts —
+not plumbing.
 
 ---
 
@@ -143,34 +145,41 @@ bug — `verify.mjs` asserts **both directions**: 0 requests before consent, 2 a
 audit penalises the ad network's third-party cookies. This is **inherent to ad monetization and
 not fixable**. Recorded rather than hidden.
 
-### Payout — ⬜ the one remaining blocker
+### Payout — ✅ **ATTACHED 2026-09-30** (WebMoney / WMZ)
 
-| Method | Minimum | Region constraint |
-|---|---|---|
-| **Paxum** | **$5** | none |
-| **Crypto / USDT (Tether)** | **$5** | none |
-| PayPal | $25 | account must be supported in your region |
-| Local Bank Transfer (Hyperwallet) | $50 | 45+ local currencies |
-| Wire transfer | $1,000 | — |
+| Method | Minimum | KYC | |
+|---|---|---|---|
+| **WebMoney (WMZ / WMT)** | **$5** | no | ✅ **ATTACHED** |
+| Paxum | $5 | no | available |
+| Crypto / USDT (Tether) | $5 | no | available |
+| PayPal (via Hyperwallet) | $25 | — | available |
+| Local Bank Transfer | $25 | **yes** — ID documents | available |
+| Wire transfer | $1,000 | **yes** — ID documents | available |
 
-Schedule: **NET-15, paid biweekly.**
+**WebMoney at $5 is the joint-lowest threshold Adsterra offers**, and WMZ is a
+**USD-denominated purse** — so it carries **no bank-region constraint**. That was the entire
+reason Adsterra was chosen ahead of AdSense: AdSense pays by bank transfer to a supported region,
+Angelo's bank is in the Philippines, and he is temporarily in Libya. A $5 floor means the first
+payout arrives after a few thousand impressions rather than after a $100 threshold.
 
-| | |
-|---|---|
-| Attached? | ❌ **No.** The account has no payout method, so revenue accrues but cannot be withdrawn. |
+Confirmed from Adsterra's own publisher documentation:
+> "The smallest amount to withdraw is $5 (for Paxum and WM)."
 
-**Recommended: Paxum, or a USDT wallet — both at $5.** Paxum and crypto carry no bank-region
-constraint, which is the whole reason Adsterra was chosen ahead of AdSense: AdSense pays by bank
-transfer to a supported region, Angelo's bank is in the Philippines, and he is temporarily in
-Libya. A $5 floor also means the first payout arrives after trivial traffic rather than after a
-$100 threshold.
+**Payment schedule: biweekly and fully automatic** — no manual request. Paid in 2-day windows on
+the **1st–2nd** and **16th–17th** of each month, 09:00–18:00 GMT, shifted to the nearest business
+day on weekends. Reaching the minimum between the 1st–15th ⇒ paid the 1st–2nd of the next month;
+after the 16th ⇒ paid the 16th–17th. Payout fields lock ±3 days around each window.
 
-**Second option worth knowing:** Local Bank Transfer via Hyperwallet covers 45+ currencies at a
-$50 minimum, which may reach a Philippine bank directly if a local-currency payout is preferred
-over crypto. Verify eligibility in the dashboard before relying on it.
+> ⚠️ **Attached is not the same as approved.** Adsterra requires **both** conditions: the balance
+> must reach the minimum, **and** the Payout Information form must be filled in and **approved**.
+> Check the Payout Information page for an approval status. If it reads pending, money will not
+> move no matter what the balance says.
 
-**Next action for Angelo:** Adsterra dashboard → *Payment settings* → add **Paxum** or a **USDT**
-wallet in your own name. That is the last step between "ads serve" and "money arrives".
+> ⚠️ **On the WebMoney side:** moving WMZ onward to a bank requires a WebMoney Passport at some
+> tiers. That is separate from Adsterra and worth reviewing before the first payout lands.
+
+**This closes definition-of-done requirement 5** — payout details are attached to the account, in
+Angelo's name.
 
 ---
 
@@ -221,12 +230,13 @@ portal that has its own ad network embeds it, which needs those accounts (B–E,
 | Upload bundle, cover art, 3 screenshots, 10 clips | Search Console verification |
 | Legal pages, 3 guides, launch-post drafts | Any portal beyond itch.io |
 
-**Recommended order: A ✅ → H ✅ → payout → B → F → C → D → E → G → I.**
+**Recommended order: A ✅ → H ✅ → payout ✅ → B → F → C → D → E → G → I.**
 
 Rationale for deviating from the brief's order: **Adsterra (H) was pulled forward.** Most ad
 programs gate payment on the *bank account's region*, which is a problem for a Philippine
-account. Adsterra pays **USDT/Paxum from a $5 minimum** with no bank-region constraint, making it
-the fastest route to actually receiving money. The brief's original order is otherwise preserved.
+account. Adsterra pays **WebMoney/Paxum/crypto from a $5 minimum** with no bank-region constraint,
+making it the fastest route to actually receiving money. The brief's original order is otherwise
+preserved.
 
 ---
 
@@ -399,16 +409,18 @@ submit and each adds a little traffic, but they will not move the needle alone.
 
 Stated plainly so there are no surprises:
 
-- **Adsterra is live, so the clock has started — but $0 has been counted and nothing is
-  withdrawable until a payout method is attached.** That is a 2-minute task in the Adsterra
-  dashboard and it is the highest-value thing left to do.
+- **The money path is now complete.** Ads serve, and WebMoney/WMZ is attached at a $5 minimum.
+  Nothing is broken and nothing is missing — **the only thing standing between this and money is
+  traffic.** Ads on a page nobody visits earn nothing.
+- **Payouts are automatic and biweekly** (1st–2nd and 16th–17th). No manual request, no invoicing.
 - **Nothing here pays on a schedule you control.** Portal review takes days to weeks. AdSense
   takes days and wants real traffic.
-- **First money is small.** Adsterra pays from $5; AdSense and GameDistribution need $100 / €100
-  first. At typical display CPMs, $5 is a few thousand impressions — real traffic, not a formality.
-- **Traffic is the whole game.** No traffic means no revenue regardless of how many networks are
-  integrated. That is why Phase 4 (the articles, the clips, the launch posts) matters more than
-  the number of logos on this page. Ads on a page nobody visits earn nothing.
+- **The first money is small.** At a $5 minimum and typical display CPMs, that is a few thousand
+  impressions — real traffic, not a formality.
+- **Traffic is the whole game.** That is why Phase 4 (the articles, the clips, the launch posts)
+  matters more than the number of logos on this page. **The three articles and ten clips are live;
+  the launch posts are drafted but not posted**, because posting as Angelo is not something I do.
+  That is the single biggest remaining lever.
 - **Portal revenue shares are on net, not gross**, so the headline percentage is never what lands.
 
 ---

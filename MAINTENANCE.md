@@ -263,6 +263,8 @@ working or a revenue bug. `verify.mjs` checks 0 requests before consent and 2 af
 | Monthly | `node .verify/verify-ads.mjs https://neon-drop.netlify.app` — an ad slot can silently die |
 | Monthly | Search Console → check for indexing errors |
 | Monthly | **Adsterra dashboard → confirm impressions are non-zero.** Our side serving is not proof they count it. |
+| **Monthly (1st–2nd and 16th–17th)** | **Payout window.** Adsterra pays automatically on these dates at 09:00–18:00 GMT, $5 minimum, to WebMoney (WMZ). Payout fields lock ±3 days around the window — don't try to edit them then. |
+| **Once, now** | Confirm the Adsterra **Payout Information form is APPROVED**, not just saved. Adsterra needs both the minimum balance and an approved form; without approval money will not move. |
 | On any game change | re-run `make-itch-zip.py` and re-upload to the portals |
 | Yearly | Netlify free-tier bandwidth (100 GB/month) — nowhere near it yet |
 

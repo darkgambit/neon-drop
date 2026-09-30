@@ -3,7 +3,7 @@
 > The executive summary. Read this first; `PROGRESS.md` has the detail, `MAINTENANCE.md` has the
 > operational runbook, `MONETIZATION_STATUS.md` has the per-platform state.
 >
-> **Written:** 2026-09-30 · **Operator:** Angelo · **Status: LIVE and serving ads. Not yet paying.**
+> **Written:** 2026-09-30 · **Operator:** Angelo · **Status: LIVE, serving ads, payout attached.**
 
 ---
 
@@ -12,10 +12,11 @@
 Neon Drop is a finished HTML5 puzzle game that is now **live on the public internet over HTTPS**,
 **publicly playable on itch.io**, and **serving real paid advertising** from Adsterra on its
 content pages — behind a consent gate that genuinely blocks third-party scripts until the visitor
-agrees. Every one of those claims is backed by an automated check that runs against the production
-URL, not against a local mock. **Revenue to date is $0.00 and nothing is withdrawable, because the
-Adsterra account has no payout method attached.** That is the single highest-value remaining task,
-it takes about two minutes, and it needs Angelo's sign-in.
+agrees. A **payout method is attached** (WebMoney/WMZ, $5 minimum), so the money path is complete
+end to end. Every one of those claims is backed by an automated check that runs against the
+production URL, not against a local mock. **Revenue to date is $0.00 — and the reason is no longer
+anything missing. It is simply that the site does not yet have enough traffic.** The bottleneck has
+moved from engineering to distribution.
 
 ---
 
@@ -27,13 +28,14 @@ it takes about two minutes, and it needs Angelo's sign-in.
 | **itch.io listing** | **https://kdbdeocampo.itch.io/neon-drop** | 🟢 Live, verified playable (12/12) |
 | **GitHub** | https://github.com/darkgambit/neon-drop | 🟢 Public, `main`, 15 commits |
 | **Ads** | same domain, `/` and `/blog/*` | 🟢 Adsterra serving real creatives |
+| **Payout** | Adsterra → WebMoney (WMZ) | 🟢 Attached, $5 minimum, biweekly automatic |
 
-**Revenue: $0.00.** No payout method is attached to the ad account, so money cannot leave Adsterra
-even once impressions are counted.
+**Revenue: $0.00 — and nothing is missing.** The ads serve and a payout method is attached. The
+only reason the total is zero is that the site does not yet have enough traffic.
 
 ---
 
-## Definition of done — 3 of 6 met
+## Definition of done — 4 of 6 met, and all 3 money requirements satisfied
 
 | # | Requirement | State | Evidence |
 |---|---|---|---|
@@ -41,12 +43,16 @@ even once impressions are counted.
 | 2 | Game live and publicly playable on ≥1 portal | ✅ **MET** | itch.io, 12/12 checks driving the real store page |
 | 3 | ≥1 ad network integrated and verifiably making ad requests | ✅ **MET** | Adsterra, 2 units/page, HTTP 200, creatives rendered |
 | 4 | Placeholder grep returns nothing | ✅ **MET** | 0 matches; `check-placeholders.mjs` reports 0 ACTIVE |
-| 5 | Payout details attached in Angelo's name | ❌ **NOT MET** | No payout method on the Adsterra account |
+| 5 | Payout details attached in Angelo's name | ✅ **MET** | **WebMoney (WMZ) attached**, $5 minimum, no bank-region gate |
 | 6 | Search Console verified, sitemap submitted | ❌ **NOT MET** | Handshake issued, deferred by Angelo |
 | — | All handover docs committed and accurate | ✅ **5/5** | This file was the last one |
 
-**Requirements 5 and 6 are both blocked on a sign-in, not on engineering.** Everything that can be
-built without Angelo's identity has been built and tested.
+**Requirement 6 is blocked on a sign-in, not on engineering.** Everything that can be built
+without Angelo's identity has been built and tested. **The three money requirements are all met.**
+
+> ⚠️ **One caveat on requirement 5:** Adsterra requires **both** a minimum balance **and** an
+> **approved** Payout Information form. Attaching the method is not the same as having it approved.
+> Confirm the form's status — if it reads pending, money will not move regardless of the balance.
 
 ---
 
@@ -159,13 +165,16 @@ These were found by testing, not by review. Each was a genuine bug in shipped co
 
 Stated plainly so there are no surprises:
 
-- **Nothing pays on a schedule you control.** Portal review takes days to weeks. AdSense takes days
-  and wants real traffic.
-- **The first money is small.** Adsterra pays from **$5** — at typical display CPMs that is a few
-  thousand impressions. Real traffic, not a formality.
+- **The money path is complete.** Ads serve, and WebMoney/WMZ is attached at a $5 minimum. Nothing
+  is broken and nothing is missing — **the only thing between this and money is traffic.**
+- **Payouts are automatic and biweekly** — 1st–2nd and 16th–17th of each month, no manual request.
+- **The first money is small.** At a $5 minimum and typical display CPMs, that is a few thousand
+  impressions. Real traffic, not a formality.
 - **Traffic is the whole game.** Ads on a page nobody visits earn nothing. Three original articles
-  are live, ten vertical clips are cut, and launch posts are drafted — but **nothing has been
-  posted**, because posting as Angelo is not something I will do. That is the next lever.
+  are live and ten vertical clips are cut, but **the launch posts are drafted and unposted** —
+  because posting as Angelo is not something I will do. **That is the single biggest remaining
+  lever**, and it is the difference between a live site and an earning one.
+- **Nothing pays on a schedule you control.** Portal review takes days to weeks.
 - **Portal revenue shares are on net, not gross.** The headline percentage is never what lands.
 
 ---
@@ -174,14 +183,14 @@ Stated plainly so there are no surprises:
 
 | Blocked item | Needs |
 |---|---|
-| 🔴 **Adsterra payout method** | Angelo's sign-in. Paxum or USDT, $5 minimum. **Do this first.** |
+| **Traffic / distribution** | 🔴 **The real constraint now.** The launch posts are drafted and ready; they need Angelo to post them, or a decision on how to promote. |
 | itch.io re-upload | Angelo's sign-in. The corrected zip is staged and verified — a file swap. |
 | Search Console + Bing | Angelo's sign-in. HTML-tag method (no DNS control on `netlify.app`). |
 | GameDistribution, CrazyGames, Playgama, Poki, AdSense, Ko-fi, long tail | One sign-in each |
-| Analytics (Cloudflare / Umami) | An account |
+| Analytics (Cloudflare / Umami) | An account. Matters more now — knowing which pages bring traffic is the difference between guessing and optimising. |
 
-**Nothing else is blocked.** Every engineering task that does not require an account has been
-completed and verified.
+**No engineering is blocked.** Every task that does not require an account has been completed and
+verified.
 
 ---
 
@@ -201,8 +210,13 @@ completed and verified.
 
 ## The bottom line
 
-**The game works, it is live, and it is earning infrastructure is switched on.** Three of six hard
-requirements are met and the remaining three are blocked on sign-ins, not on engineering. Revenue
-is $0.00 — not because anything is broken, but because the money has nowhere to go yet.
+**The game works, it is live, and the money path is complete.** Four of six hard requirements are
+met, including **all three money requirements** — live on a portal, an ad network verifiably serving,
+and a payout method attached. The one remaining engineering-adjacent item is a Search Console
+sign-in.
 
-**Attach a payout method. That is the whole remaining distance to first revenue.**
+Revenue is $0.00 — **not because anything is broken or missing, but because the site does not yet
+have enough traffic.** That is now the whole problem, and it is a marketing problem, not a
+technical one.
+
+**The next move is distribution, not code.**

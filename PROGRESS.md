@@ -17,32 +17,36 @@
 | # | Phase | State | Notes |
 |---|---|---|---|
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
-| 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 42/42 functional. All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed. Commit `a1b2ad6`. |
+| 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 47/47 functional (was 42; the ad + consent checks were added in Phase 3). All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed in Phase 1. Commit `a1b2ad6`. |
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
-| 3 | **Connect the money** — portals + ad networks | 🟡 **A + Adsterra done, B–I not started** | ✅ **itch.io LIVE** — https://kdbdeocampo.itch.io/neon-drop, verified playable 12/12 · ✅ **Adsterra LIVE** — serving real creatives behind a consent gate. ⬜ payout method not attached. One checkpoint per platform. See `MONETIZATION_STATUS.md`. |
-| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70%** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
+| 3 | **Connect the money** — portals + ad networks | 🟡 **A + H + payout done, B–G/I not started** | ✅ **itch.io LIVE** 12/12 · ✅ **Adsterra LIVE** serving real creatives, consent-gated · ✅ **payout attached** (WebMoney/WMZ, $5). ⬜ 7 platform accounts remain. |
+| 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70% — now the binding constraint** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted (**not posted**) · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
 | 5 | **Handover** — docs + evidence | ✅ **DONE** | ✅ `LAUNCH_REPORT.md` · ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `PROGRESS.md` · ✅ `/evidence` screenshots incl. `evidence/ads/` |
 
 ---
 
 ## Definition of done — scorecard
 
-Checked 2026-09-30. **Not finished.** Three of six hard requirements are met.
+Checked 2026-09-30. **Four of six hard requirements are met.**
 
 | # | Requirement | State | Evidence |
 |---|---|---|---|
 | 1 | Live URL over HTTPS, playable mobile + desktop, zero console errors | ✅ **MET** | 47/47 checks against production; HSTS, http→https 301 |
 | 2 | Game LIVE and publicly playable on ≥1 portal | ✅ **MET** | https://kdbdeocampo.itch.io/neon-drop — 12/12 via `.verify/verify-itch.mjs` |
-| 3 | ≥1 ad network integrated, **verifiably making ad requests** | ✅ **MET** | **Adsterra live.** 2 units per content page, HTTP 200, 728×90 + 300×250 rendered. `evidence/ads/`. Gated on consent: 0 requests before, 2 after. |
+| 3 | ≥1 ad network integrated, **verifiably making ad requests** | ✅ **MET** | **Adsterra live.** 2 units per content page, HTTP 200, 728×90 + 300×250 + 320×50 rendered. `evidence/ads/`. Gated on consent: 0 requests before, 2 after. |
 | 4 | Placeholder grep returns nothing | ✅ **MET** | narrow grep exit 1; `tools/check-placeholders.mjs` 0 active |
-| 5 | Payout details attached to accounts in Angelo's name | ❌ **NOT MET** | No payout method on the Adsterra account yet. **This is now the blocker that matters** — ads serve, so revenue accrues, but it cannot be withdrawn. |
+| 5 | Payout details attached to accounts in Angelo's name | ✅ **MET** | **WebMoney (WMZ) attached 2026-09-30**, $5 minimum, no bank-region gate. ⚠️ confirm the Payout Information form is *approved*, not just saved. |
 | 6 | Search Console verified, sitemap submitted | ❌ **NOT MET** | Handshake issued, **deferred by Angelo**. Sitemap is live and valid but unsubmitted |
 | — | All handover docs committed and accurate | ✅ **5/5** | `LAUNCH_REPORT.md` written — the last one |
 
-**Do not describe this project as "earning".** The ad network is integrated and verifiably
-serving — requirement 3 is met — but the running total is still **$0.00** and no payout method
-is attached. Revenue can now accrue; it cannot yet be collected. Requirement 5 is the next
-one to fall, and it is the only remaining item that needs Angelo's identity.
+**The money path is now complete end to end.** Ads serve, and a payout method with the lowest
+threshold Adsterra offers is attached. Revenue is **$0.00** — not because anything is broken or
+missing, but because there is not yet enough **traffic**. The remaining requirements are a
+verification handshake (6) and the portal accounts.
+
+**The bottleneck has moved.** It was engineering; it is now **distribution**. Three articles and
+ten clips are live, and the launch posts are drafted but unposted — that is the highest-value
+unblocked lever left.
 
 ---
 
@@ -209,8 +213,9 @@ queued as a handshake.
 | Units live | 728×90 leader + 300×250 rectangle (landing) · 468×60 banner + 300×250 rectangle (each blog page) |
 | Units approved, unused | 160×600, 160×300 — need a sidebar this layout does not have |
 | Where | **Content pages only.** Never `/game/*` (see below) |
-| Minimum payout | $5, USDT / Paxum |
-| Payout method | ❌ **not attached** — revenue accrues but cannot be withdrawn yet |
+| Minimum payout | **$5** (WebMoney / Paxum / crypto — joint lowest) |
+| Payout method | ✅ **WebMoney (WMZ) attached 2026-09-30.** USD purse, no bank-region constraint. |
+| Schedule | Automatic, biweekly — 1st–2nd and 16th–17th, 09:00–18:00 GMT. No manual request. |
 
 **Why Adsterra and not AdSense first.** AdSense gates on a content review and pays only by
 bank transfer to a supported region; Angelo's bank is in the Philippines and he is temporarily
@@ -289,6 +294,11 @@ The performance cost was recovered by the same lazy-loading work (see the Lighth
 **Open item — impressions are unconfirmed on Adsterra's side.** Our side is proven: requests
 fire, creatives render. Whether Adsterra *counts* them shows up in their dashboard, and that is
 the number that becomes money. Check it after ~24 h of real traffic.
+
+**Payout attached — but "attached" is not "approved".** Adsterra requires **both** the minimum
+balance **and** an **approved** Payout Information form. Confirm the form's status; if it reads
+pending, no money moves regardless of balance. Separately, moving WMZ onward to a bank needs a
+WebMoney Passport at some tiers — worth reviewing before the first payout lands.
 
 ### Defect found and fixed: the debug label shipped to players
 
@@ -518,32 +528,37 @@ tile values deterministic. **No game code was modified to make it testable.**
 
 ## Blocked / open questions
 
-1. **🔴 Adsterra payout method — the highest-value open item.** Ads serve and impressions accrue,
-   but the account has no payout method, so **nothing can be withdrawn**. Handshake #3 was issued
-   and **deferred by Angelo** ("continue"), not skipped. Recommended: Paxum or a USDT wallet, both
-   at a $5 minimum. Two minutes in the Adsterra dashboard.
-2. **itch.io re-upload** — the live listing predates the `#netTag` fix. The corrected zip is
+1. **✅ Adsterra payout — DONE 2026-09-30.** WebMoney (WMZ) attached, $5 minimum, biweekly
+   automatic payouts. **Follow-up for Angelo:** confirm the Payout Information form shows
+   *approved*, not pending — Adsterra requires approval as well as the balance.
+2. **Traffic is now the binding constraint, not engineering.** Ads serve and a payout method is
+   attached; revenue is $0.00 purely because there is not yet enough traffic. The three articles
+   and ten clips are live. **The launch posts are drafted but unposted** — posting as Angelo is
+   not something I will do, so this needs either his go-ahead or a change of plan.
+3. **itch.io re-upload** — the live listing predates the `#netTag` fix. The corrected zip is
    staged and verified; this is a straight file swap needing a sign-in. Handshake queued.
-3. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
+4. **Google Search Console + Bing Webmaster Tools** — needs a sign-in handshake to obtain the
    verification token. Netlify gives us no DNS control (the site is on a `netlify.app` subdomain),
    so DNS verification is not available; the **HTML-tag method** is the path. Handshake #2 was
    issued and **deferred, not skipped**.
-4. **Every remaining Phase 3 platform** needs its own sign-in handshake — GameDistribution,
+5. **Every remaining Phase 3 platform** needs its own sign-in handshake — GameDistribution,
    CrazyGames, Playgama, Poki, AdSense, Ko-fi, and the long tail. Nothing can be submitted without
    an account, so this is the single biggest remaining dependency. See `MONETIZATION_STATUS.md`.
-5. **Analytics** needs a Cloudflare Web Analytics or Umami account.
-6. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
+6. **Analytics** needs a Cloudflare Web Analytics or Umami account. This matters more now: with
+   the money path complete, knowing which pages and referrers bring traffic is the difference
+   between guessing and optimising.
+7. **Phase 0 answers never explicitly confirmed.** Proceeding on recorded defaults: slug `neon-drop`,
    public contact `kingripper9@gmail.com`, Philippines, crypto-preferred payout.
    ⚠️ The contact address is now **published** on `contact.html` — say the word and I will swap it.
-7. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
+8. **No `LICENSE` file.** The repo is public with no license, which means all rights reserved by
    default. That is *consistent* with `terms.html` (personal licence to play only; embedding needs a
    licence) — but it is a business decision, so I have not touched it. Decide whether the source
    stays all-rights-reserved or is open-sourced; portals sometimes ask.
-8. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
+9. **The contact email is a personal Gmail address** and is now publicly scrapeable. Worth swapping
    for a dedicated address if it becomes noisy.
-9. **`ads.txt` has no Adsterra record, deliberately.** Their publisher docs do not state an
-   `ads.txt` requirement for the banner format. Confirm with Adsterra support before adding a line —
-   a guessed seller record is worse than an empty file.
+10. **`ads.txt` has no Adsterra record, deliberately.** Their publisher docs do not state an
+    `ads.txt` requirement for the banner format. Confirm with Adsterra support before adding a line —
+    a guessed seller record is worse than an empty file.
 
 ---
 
@@ -633,14 +648,14 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   measurements · acceptance grep 0 matches · every private path 404, every public path 200.**
 - **Requirement 3 of the definition of done flipped to MET.** Revenue is still **$0.00** and
   nothing is withdrawable — **no payout method is attached to the Adsterra account.** That is
-  now the single highest-value open item.
+  now the single highest-value open item. *[Superseded the same day — see the payout entry below.]*
 - **Closed my own verification gap.** I had confirmed the mobile 320×50 unit *requested*, never
   that it *filled* — the exact trap I had just written into the skill. It swaps in a **different
   key** at narrow widths, so desktop success proved nothing. Now measured: 320×50 unit used,
   HTTP 200, renders at exactly 320×50, no overflow, real creative filling it.
 - **Corrected the payout facts against Adsterra's own docs:** Paxum **$5**, crypto/USDT **$5**,
-  PayPal $25, Local Bank Transfer (Hyperwallet, 45+ currencies) $50, wire $1,000. NET-15 biweekly.
-  LBT is worth knowing — it may reach a Philippine bank without crypto.
+  PayPal $25, Local Bank Transfer (Hyperwallet) $25, wire $1,000. *(The "NET-15" written here
+  first was wrong — the real schedule is **biweekly and automatic**, 1st–2nd and 16th–17th.)*
 - **`ads.txt` left AdSense-only.** Adsterra's publisher docs do not state an `ads.txt` requirement
   for the banner format; inventing a seller line would misdeclare the inventory. Needs support
   confirmation, not a guess.
@@ -650,6 +665,23 @@ Use `--directory`, **not** `cd _site` — see the deploy gotcha below.
   **5/5** and the "all docs committed and accurate" requirement is met.
 - **Phase 5 is complete.** The remaining distance is entirely sign-ins: Adsterra payout (first),
   itch re-upload, Search Console, then the seven remaining platforms.
+
+### 2026-09-30 — payout attached; the money path is complete
+
+- **Angelo attached WebMoney (WMZ) to the Adsterra account.** Requirement 5 of the definition of
+  done flips to **MET** — the scorecard is now **4 of 6**, and **all three money requirements are
+  satisfied**.
+- **Verified the terms rather than assuming them.** Confirmed from Adsterra's own publisher docs
+  that **WebMoney is a $5 minimum**, tied with Paxum for their lowest threshold. That is the best
+  available outcome: WMZ is a USD purse with no bank-region constraint, which was the whole reason
+  Adsterra was chosen ahead of AdSense.
+- **Corrected the payout schedule.** It is **biweekly and automatic** — 1st–2nd and 16th–17th,
+  09:00–18:00 GMT, no manual request. My earlier note said NET-15, which was wrong.
+- **Recorded the caveat that matters: attached ≠ approved.** Adsterra requires **both** the minimum
+  balance **and** an approved Payout Information form. Flagged for Angelo to confirm the status.
+- **The bottleneck has moved from engineering to distribution.** Nothing is broken and nothing is
+  missing; revenue is $0.00 because there is not yet enough traffic. The articles and clips are
+  live; **the launch posts are drafted but unposted** — that is the highest-value lever left.
 
 ---
 
