@@ -43,6 +43,54 @@ portal — that is a business decision, not a technical one.
 **satisfied** by itch.io. Still outstanding: an ad network making verifiable ad requests,
 and payout details attached in Angelo's name.
 
+---
+
+## Runtime audit — is anything actually monetizing? **No.**
+
+Run it yourself: `node .verify/audit-monetization.mjs`. It loads the live game, starts a game,
+exercises both ad paths, and records every request the page makes to a known ad host.
+
+```
+=== adapter state on the LIVE build ===
+{ "hasAds": true, "network": "none", "ready": true, "debug": false,
+  "sdkPresent": { "CrazyGames": false, "PokiSDK": false,
+                  "playgamaBridge": false, "gdsdk": false } }
+
+=== ad API calls ===
+{ "interstitial": "undefined", "rewarded": "true" }
+
+=== requests to known ad/tracking hosts ===
+(NONE — no ad request fires)
+```
+
+Read it carefully, because two lines look like good news and are not:
+
+- `"rewarded": "true"` — the rewarded button **grants the reward without showing an ad**. That is
+  the adapter's designed safe stub: it means the game never breaks when no SDK is present. It is
+  **not** evidence of monetization. There is no ad.
+- `"interstitial": "undefined"` — the interstitial path resolves without ever calling a network.
+
+**Live config, verified over HTTPS:** `network: 'auto'`, `gdGameId: ''`, `adsenseClient: ''`.
+`ads.txt` has **0 active records**. `/game/index.html` loads **0** ad SDKs. The landing page's one
+`googlesyndication` match is the inert commented-out instruction block.
+
+**Revenue to date: $0.00.** No ad network is connected. No payout method is attached to anything.
+`itch.io` is free-to-play and cannot earn.
+
+### What that means, plainly
+
+The *plumbing* is done and tested. The *connections* are not. Nothing can earn until an account
+exists on at least one network and its ID is pasted into `game/monetize.js`.
+
+| Ready now (built + verified) | Missing (needs an account) |
+|---|---|
+| Multi-network adapter with a tested safe fallback | Any ad-network account |
+| `Ads.network` / `.ready` / `.debug` public state | A real `gdGameId` / `adsenseClient` |
+| Per-portal field values for 8 platforms | Payout details in Angelo's name |
+| Upload bundle, cover art, 3 screenshots, 10 clips | Analytics (Cloudflare / Umami) |
+| `ads.txt` scaffold with instructions | Search Console verification |
+| Legal pages, 3 guides, launch-post drafts | Any portal beyond itch.io |
+
 **Recommended order: A → B → H → F → C → D → E → G → I.**
 
 Rationale for deviating from the brief's order: **Adsterra (H) is pulled forward.**

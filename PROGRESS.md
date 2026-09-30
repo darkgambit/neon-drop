@@ -25,6 +25,27 @@
 
 ---
 
+## Definition of done — scorecard
+
+Checked 2026-09-30. **Not finished.** Two of six hard requirements are met.
+
+| # | Requirement | State | Evidence |
+|---|---|---|---|
+| 1 | Live URL over HTTPS, playable mobile + desktop, zero console errors | ✅ **MET** | 45/45 checks against production; HSTS, http→https 301 |
+| 2 | Game LIVE and publicly playable on ≥1 portal | ✅ **MET** | https://kdbdeocampo.itch.io/neon-drop — 12/12 via `.verify/verify-itch.mjs` |
+| 3 | ≥1 ad network integrated, **verifiably making ad requests** | ❌ **NOT MET** | `network: 'none'`; **zero** requests to any ad host. See `MONETIZATION_STATUS.md` § Runtime audit |
+| 4 | Placeholder grep returns nothing | ✅ **MET** | narrow grep exit 1; `tools/check-placeholders.mjs` 0 active |
+| 5 | Payout details attached to accounts in Angelo's name | ❌ **NOT MET** | Only GitHub, Netlify, itch.io exist. No ad network, no payout method |
+| 6 | Search Console verified, sitemap submitted | ❌ **NOT MET** | Handshake issued, **deferred by Angelo**. Sitemap is live and valid but unsubmitted |
+| — | All handover docs committed and accurate | 🟡 4/5 | `LAUNCH_REPORT.md` deliberately last |
+
+**Do not describe this project as "set for monetization".** It is *instrumented* for monetization —
+adapter built, fallbacks tested, field values prepared — but nothing is connected and the running
+total is **$0.00**. Requirement 3 is the one that must fall first: it is the only one that can
+begin earning without a review queue.
+
+---
+
 ## Git state
 
 ```
