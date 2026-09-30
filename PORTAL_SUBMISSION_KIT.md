@@ -211,14 +211,17 @@ for name, tw, th, fy in [('512x512-square.png',512,512,.42),
 the SDK snippet is only issued with the entry. So:
 
 ```
-1. create the game entry (fields below)      -> GD issues the GAME ID
-2. python tools/make-itch-zip.py --gd-id <GAME_ID>
-3. node .verify/verify-gd-release.mjs        -> must print READY TO UPLOAD
-4. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)
+1. create the game entry (fields below)      ✅ DONE  -> id issued
+2. python tools/make-itch-zip.py --gd-id <GAME_ID>   ✅ DONE  -> dist/neon-drop-gd.zip
+3. node .verify/verify-gd-release.mjs        ✅ DONE  -> 8/8, READY TO UPLOAD
+4. upload dist/neon-drop-gd.zip  (NOT the itch zip — the itch one has no game id)   ⬅ NEXT
 5. tick the rewarded-ads flag
 6. dashboard: open the game in their iframe and watch one full pre-roll -> SDK activated
 7. dashboard: watch one complete rewarded ad                            -> rewarded verified
 ```
+
+The game id is `bf2e282808444ff495c89f0c78bc617f` (recorded in `DEPLOY_SECRETS.local.md`, which is
+gitignored — it is injected at build time and **never committed into `game/monetize.js`**).
 
 If step 1's form demands a zip before it will show you an id, upload `dist/neon-drop-itch.zip` as a
 placeholder to create the entry, copy the id, then **replace** it with the GD build. A bundle

@@ -19,7 +19,7 @@
 | 0 | **Orient** — read repo, capture identity answers | ✅ done (defaults) | Never explicitly answered; proceeded on recorded defaults. See `DEPLOY_SECRETS.local.md`. |
 | 1 | **Prove it works** — Playwright + Lighthouse, fix bugs | ✅ **DONE** | 47/47 functional (was 42; the ad + consent checks were added in Phase 3). All Lighthouse thresholds met on a controlled measurement. 2 real defects fixed in Phase 1. Commit `a1b2ad6`. |
 | 2 | **Go live** — GitHub + Netlify + Search Console | 🟡 **only Search Console / Bing left** | Live on Netlify with HTTPS. Repo public and pushed. Domain + email placeholders replaced. GSC handshake was issued and **deferred by Angelo** ("continue") — not skipped, just not yet done. |
-| 3 | **Connect the money** — portals + ad networks | 🟡 **A + H + payout done; B built and verified, awaiting the game id; C–G/I not started** | ✅ **itch.io LIVE** 14/14 · ✅ **Adsterra LIVE** serving real creatives, consent-gated · ✅ **payout attached** (WebMoney/WMZ, $5) · 🟡 **GameDistribution**: clauses shown, SDK + pre-roll + mid-roll integrated, isolation 10/10, rewarded gate 8/8 — blocked only on the game id. ⬜ 6 platform accounts remain. |
+| 3 | **Connect the money** — portals + ad networks | 🟡 **A + H + payout done; B upload-ready; C–G/I not started** | ✅ **itch.io LIVE** 14/14 · ✅ **Adsterra LIVE** serving real creatives, consent-gated · ✅ **payout attached** (WebMoney/WMZ, $5) · 🟢 **GameDistribution READY TO UPLOAD** — id `bf2e28…617f` in hand, bundle built, release gate 8/8, isolation 11/11, rewarded 8/8. ⬜ 6 platform accounts remain. |
 | 4 | **Traffic** — articles, analytics, marketing kit | 🟡 **70% — now the binding constraint** | ✅ 3 guides live · ✅ 10 vertical clips · ✅ launch posts drafted (**not posted**) · ✅ 3 portal screenshots · ⬜ analytics (needs an account) |
 | 5 | **Handover** — docs + evidence | ✅ **DONE** | ✅ `LAUNCH_REPORT.md` · ✅ `MAINTENANCE.md` · ✅ `MONETIZATION_STATUS.md` · ✅ `PROGRESS.md` · ✅ `/evidence` screenshots incl. `evidence/ads/` |
 
@@ -869,6 +869,27 @@ missed; the form is taller than one screen.
   far as they went, and the *form* carried the detail that actually blocks an upload — the container
   format, and a slot that only existed below the fold. When a human can see the real form, ask for
   it; a screenshot beat two rounds of documentation reading.
+
+### 2026-09-30 — 🟢 THE GAME ID ARRIVED. Phase 3B is upload-ready.
+
+Angelo supplied **`bf2e282808444ff495c89f0c78bc617f`**. The blocker that stood for the whole of
+Phase 3B is cleared.
+
+- **Validated before use:** 32 characters, pure hex, matches GD's game-id shape, and **not** the
+  documentation example the release gate refuses by name.
+- **Bundle built:** `dist/neon-drop-gd.zip` (12.2 KB). The builder read the id back **out of the
+  written zip** and asserted it landed — `gdGameId: 'bf2e28…617f' verified INSIDE the zip`.
+- **`.verify/verify-gd-release.mjs` — 8/8, prints `READY TO UPLOAD`.** The real artefact loads, the
+  adapter reports `network=gamedistribution` at runtime, GD's SDK is actually requested, the game
+  starts, no console errors from our code.
+- **Regression-checked after the build:** isolation **11/11** (the neutral itch bundle still reports
+  `none` with 0 SDK requests, and the harness asserts the throwaway id never touched `dist/`),
+  rewarded gate **8/8**, placeholder gate **PASS**.
+- **The itch bundle is unchanged and still network-neutral** — the id lives only in the GD artefact.
+- **Recorded** in `DEPLOY_SECRETS.local.md` (which is gitignored — the id never enters the repo).
+- **Next action is Angelo's, and it is a manual one:** upload `dist/neon-drop-gd.zip`, tick the
+  rewarded-ads flag, then watch a full pre-roll and a complete rewarded ad in GD's iframe. Those two
+  checklist items could never have passed before now — see the entry above for why.
 
 ---
 
