@@ -116,7 +116,8 @@ Kill the local server before deploying. Starting it from the repo root and point
 | `node tools/check-placeholders.mjs` | placeholder gate over the deployable set; exits 1 on any ACTIVE one |
 | `node tools/shot.mjs <url> <outDir>` | evidence screenshots, desktop + mobile |
 | `node tools/shot-portal.mjs [url] [outDir]` | 3 store screenshots at 1040×2060, seeded and reproducible |
-| `python tools/make-portal-thumbs.py` | every portal thumbnail size from `cover.png`, centre-cropped (needs Pillow) |
+| `python tools/make-portal-thumbs.py` | every portal thumbnail size from `cover.png`, centre-cropped, as **both PNG and JPG** (needs Pillow) |
+| `python tools/check-portal-assets.py` | gate: asserts each upload slot exists, is the right size **and the right format** — exits 1 otherwise |
 | `node tools/build-site.mjs` | stage `_site/` from the allowlist; refuses to stage a forbidden file |
 
 **Serve the staged build, not the repo root.** `_site` is what actually deploys, so testing the

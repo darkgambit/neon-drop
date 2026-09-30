@@ -832,6 +832,26 @@ guidance in `PORTAL_SUBMISSION_KIT.md` was materially wrong. Corrections, all no
   explicitly marked as assumed.
 - **Still blocked on the same single value:** the GD game id. Nothing else in Phase 3B is open.
 
+### 2026-09-30 — the form itself caught one more thing: **JPG, not PNG**
+
+Angelo pasted a screenshot of the actual GD upload view. It settles the asset question and corrects
+my own correction:
+
+- **Every image slot advertises ".jpg or .jpeg".** The thumbnails I had just generated were **PNG**,
+  so the file picker would have refused all three. Dimension-correct and format-wrong — a failure
+  that only appears at the moment of upload, with no useful error.
+- **The form confirms the sizes** — 512×384, 512×512, 200×120, each labelled *"Required (main
+  thumbnail)"* — and adds a fourth: **1280×720, "Helpful for marketing"**. So it is four slots, not
+  three.
+- `tools/make-portal-thumbs.py` now emits **both PNG and JPG** for every size (portals disagree on
+  container; itch and Poki take PNG). New `tools/check-portal-assets.py` asserts each required slot
+  exists, at the right size **and in the right format**, and exits 1 otherwise — proven to fail
+  correctly by removing one file and watching it name it.
+- All four GD slots now pass: 512×384 44 KB, 512×512 53 KB, 200×120 8.5 KB, 1280×720 125 KB.
+  JPEG quality 92 — checked by eye on the gradient-heavy 512×384, no banding.
+- **Lesson worth keeping:** "check the thumbnail sizes" was not enough. Check the **container
+  format** too. A slot can be exactly the right dimensions and still be un-uploadable.
+
 ---
 
 ## Status line format (after each phase)

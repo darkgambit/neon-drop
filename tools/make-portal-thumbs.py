@@ -4,9 +4,12 @@ make-portal-thumbs.py — generate every portal thumbnail size from cover.png.
 
 WHY THIS EXISTS
 ---------------
-GameDistribution's developer guidelines require THREE thumbnail sizes:
+GameDistribution's upload form has four image slots:
 
-    512x512, 512x384 and 200x120
+    512x384  required (main thumbnail)      -> .jpg / .jpeg
+    512x512  required (main thumbnail)      -> .jpg / .jpeg
+    200x120  required (main thumbnail)      -> .jpg / .jpeg
+    1280x720 "helpful for marketing"        -> .jpg / .jpeg
 
 The original recipe lived as a throwaway one-liner in PORTAL_SUBMISSION_KIT.md
 and hardcoded x=0 for every crop. cover.png is centred artwork, so x=0 sliced
@@ -16,6 +19,15 @@ thumbnails would have looked off-centre next to every other game on the portal.
 This script crops from the CENTRE (and lets you bias vertically when a size is
 much shorter than the art), so the title and board stay in frame at every
 aspect ratio.
+
+WHY BOTH PNG AND JPEG
+---------------------
+GameDistribution's upload form advertises ".jpg or .jpeg" on every thumbnail slot
+(512x384, 512x512, 200x120, plus a 1280x720 marketing image). PNG would have been
+refused at the file picker. Other portals ask for PNG. So this emits BOTH formats
+for every size and nobody can complain about the container.
+
+JPEG has no alpha channel; cover.png is already opaque RGB, so nothing is lost.
 
 Run from the repo root (needs Pillow):
     python tools/make-portal-thumbs.py
@@ -35,20 +47,27 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "cover.png"
 OUT = ROOT / "dist" / "art"
 
-# (filename, width, height, vertical_focus)
+# (basename, width, height, vertical_focus)
 # vertical_focus: 0.0 = top of the crop window, 0.5 = centred, 1.0 = bottom.
 # It only matters when the target is TALLER-relative-to-wide than the source,
 # i.e. when we have to crop height. The 1:1 icon leans slightly above centre so
 # the "NEON DROP" wordmark survives; the wide banners are pure centre crops.
 SIZES = [
-    ("512x512-square.png",       512,  512, 0.40),
-    ("512x384-gd.png",           512,  384, 0.50),
-    ("200x120-gd.png",           200,  120, 0.50),
-    ("800x450-crazygames.png",   800,  450, 0.50),
-    ("1280x720-16x9.png",       1280,  720, 0.50),
-    ("1920x1080-16x9.png",      1920, 1080, 0.50),
-    ("630x500-itch-cover.png",   630,  500, 0.50),
+    # GameDistribution requires all three of these, in JPG.
+    ("512x384-gd",              512,  384, 0.50),
+    ("512x512-square",          512,  512, 0.40),
+    ("200x120-gd",              200,  120, 0.50),
+    # "Helpful for marketing" slot on the same form.
+    ("1280x720-16x9",          1280,  720, 0.50),
+    # Other portals.
+    ("800x450-crazygames",      800,  450, 0.50),
+    ("1920x1080-16x9",         1920, 1080, 0.50),
+    ("630x500-itch-cover",      630,  500, 0.50),
 ]
+
+# JPEG quality. 92 keeps the neon gradients clean without ballooning the file;
+# these are storefront thumbnails, not print assets.
+JPEG_QUALITY = 92
 
 
 def cover_crop(img: Image.Image, tw: int, th: int, fy: float) -> Image.Image:
@@ -82,12 +101,21 @@ def main() -> None:
     print(f"source : {SRC.name}  {src.width}x{src.height}")
     print(f"output : {OUT.relative_to(ROOT)}\n")
 
-    for name, tw, th, fy in SIZES:
-        out = OUT / name
-        cover_crop(src, tw, th, fy).save(out, "PNG", optimize=True)
-        print(f"  {name:<26} {tw}x{th}  {out.stat().st_size / 1024:>8.1f} KB")
+    for base, tw, th, fy in SIZES:
+        crop = cover_crop(src, tw, th, fy)
 
-    print("\nall sizes written.")
+        png = OUT / f"{base}.png"
+        crop.save(png, "PNG", optimize=True)
+
+        jpg = OUT / f"{base}.jpg"
+        crop.save(jpg, "JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
+
+        print(f"  {base:<20} {tw}x{th}   "
+              f"png {png.stat().st_size / 1024:>7.1f} KB   "
+              f"jpg {jpg.stat().st_size / 1024:>7.1f} KB")
+
+    print(f"\n{len(SIZES)} sizes, PNG + JPEG (quality {JPEG_QUALITY}).")
+    print("GameDistribution wants the .jpg files.")
 
 
 if __name__ == "__main__":
