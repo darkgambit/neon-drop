@@ -1,6 +1,6 @@
 {
   "base": "https://neon-drop.netlify.app",
-  "capturedAt": "2026-09-30T02:42:17.657Z",
+  "capturedAt": "2026-10-01T17:48:50.738Z",
   "steps": [
     {
       "name": "first visit (no consent)",
@@ -40,22 +40,22 @@
     {
       "url": "https://www.highrevenueformat.com/ea195481585cda608a5473ea655629f2/invoke.js",
       "status": 200,
-      "bytes": 49560
+      "bytes": 51804
     },
     {
       "url": "https://www.highrevenueformat.com/743702bbd12151692c0084aff88afb14/invoke.js",
       "status": 200,
-      "bytes": 49560
+      "bytes": 51824
     },
     {
       "url": "https://www.highrevenueformat.com/51b71eaa7c5c6e2783278929c096e210/invoke.js",
       "status": 200,
-      "bytes": 49630
+      "bytes": 51824
     },
     {
       "url": "https://www.highrevenueformat.com/743702bbd12151692c0084aff88afb14/invoke.js",
       "status": 200,
-      "bytes": 49630
+      "bytes": 51854
     }
   ],
   "consoleErrors": [],
@@ -87,12 +87,12 @@
       {
         "url": "https://www.highrevenueformat.com/09e826ea0472cd384211a90e23a11fea/invoke.js",
         "status": 200,
-        "bytes": 49630
+        "bytes": 51854
       },
       {
         "url": "https://www.highrevenueformat.com/743702bbd12151692c0084aff88afb14/invoke.js",
         "status": 200,
-        "bytes": 49610
+        "bytes": 51804
       }
     ],
     "overflowsViewport": false
