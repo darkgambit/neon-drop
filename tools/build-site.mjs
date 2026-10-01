@@ -83,6 +83,16 @@ async function main() {
   for (const f of FILES) {
     await cp(path.join(ROOT, f), path.join(OUT, f));
   }
+
+  // IndexNow ownership key. IndexNow proves you own the host by fetching
+  // https://<host>/<key>.txt, and it 403s the whole submission if that file is not
+  // served — so a key that never reaches _site/ is a silent no-op. Matched by shape
+  // rather than by name so rotating the key cannot break the submission quietly.
+  const indexNowKeys = (await readdir(ROOT)).filter((n) => /^[a-f0-9]{32}\.txt$/.test(n));
+  for (const k of indexNowKeys) {
+    await cp(path.join(ROOT, k), path.join(OUT, k));
+  }
+
   for (const d of DIRS) {
     await cp(path.join(ROOT, d), path.join(OUT, d), { recursive: true });
   }

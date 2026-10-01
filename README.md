@@ -4,6 +4,9 @@ A complete, zero-dependency browser puzzle game with a marketing landing page, l
 and a multi-network ad adapter already wired in. Built to be published free, hosted free,
 and monetized free.
 
+**▶ Play it: <https://neon-drop.netlify.app>** — also on [itch.io](https://kdbdeocampo.itch.io/neon-drop).
+No download, no account, ~11 KB over the wire.
+
 ---
 
 ## What's in the box
