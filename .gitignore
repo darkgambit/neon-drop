@@ -10,6 +10,9 @@ DEPLOY_SECRETS.local.md
 # Local working notes — holds account/dashboard detail, never publish
 NEXT_ACTIONS.md
 
+# Adsterra Publishers API token — read by tools/check-earnings.mjs, never committed
+ADSTERRA_API_KEY.local
+
 # ─────────────────────────────────────────────────────────────
 #  Verification harness — the harness itself IS committed, because the deploy
 #  payload is allowlisted through tools/build-site.mjs, so there is no longer

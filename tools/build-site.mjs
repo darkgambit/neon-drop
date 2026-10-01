@@ -46,6 +46,7 @@ const DIRS = ['game', 'blog'];
 const FORBIDDEN = [
   'DEPLOY_SECRETS.local.md',
   'NEXT_ACTIONS.md',
+  'ADSTERRA_API_KEY.local',
   'PROGRESS.md',
   'PORTAL_SUBMISSION_KIT.md',
   'AI_AGENT_PROMPT.md',
@@ -100,7 +101,15 @@ async function main() {
 
   // --- verify: nothing forbidden slipped in, and the payload looks sane -------
   const staged = await walk(OUT);
-  const leaked = staged.filter((p) => FORBIDDEN.includes(path.basename(p)));
+  // Any *.local file is local-only by convention, whether or not it is named in
+  // FORBIDDEN. Matching the convention as well as the list means a secrets file
+  // added later is private by default, instead of public until someone remembers
+  // to list it here — which is exactly how the INFO.md leak happened on LazyTools.
+  const isForbidden = (p) => {
+    const base = path.basename(p);
+    return FORBIDDEN.includes(base) || base.endsWith('.local') || base.endsWith('.local.md');
+  };
+  const leaked = staged.filter(isForbidden);
   if (leaked.length) {
     console.error('\n[build-site] SECURITY: forbidden file(s) staged:');
     for (const p of leaked) console.error('  - ' + path.relative(ROOT, p));
