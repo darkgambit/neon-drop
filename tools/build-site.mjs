@@ -45,6 +45,7 @@ const DIRS = ['game', 'blog'];
 /** Basenames that must never appear anywhere under _site/. Belt and braces. */
 const FORBIDDEN = [
   'DEPLOY_SECRETS.local.md',
+  'NEXT_ACTIONS.md',
   'PROGRESS.md',
   'PORTAL_SUBMISSION_KIT.md',
   'AI_AGENT_PROMPT.md',

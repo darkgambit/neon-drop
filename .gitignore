@@ -7,6 +7,9 @@ DEPLOY_SECRETS.local.md
 *.key
 *.pem
 
+# Local working notes — holds account/dashboard detail, never publish
+NEXT_ACTIONS.md
+
 # ─────────────────────────────────────────────────────────────
 #  Verification harness — the harness itself IS committed, because the deploy
 #  payload is allowlisted through tools/build-site.mjs, so there is no longer
